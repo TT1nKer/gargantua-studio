@@ -63,6 +63,9 @@ SceneValidation validate_reference_scene(
     if (scene.mass_M <= 0.0) {
         return invalid("mass_M must be positive");
     }
+    if (scene.observer_radius_M <= 0.0) {
+        return invalid("observer radius must be positive");
+    }
     if (std::fabs(scene.spin_chi) >= 1.0) {
         return invalid("spin_chi must satisfy abs(spin_chi) < 1");
     }
@@ -81,16 +84,8 @@ SceneValidation validate_reference_scene(
         return invalid("image dimensions exceed the reference-render limit");
     }
 
-    const double horizon_radius =
-        scene.mass_M *
-        (1.0 + std::sqrt(
-            1.0 - scene.spin_chi * scene.spin_chi));
-    if (scene.observer_radius_M <=
-        horizon_radius + scene.mass_M) {
-        return invalid("observer must remain at least 1 M outside the horizon");
-    }
-    if (scene.disk.outer_radius_M <= horizon_radius) {
-        return invalid("disk outer radius must remain outside the horizon");
+    if (scene.disk.outer_radius_M <= 0.0) {
+        return invalid("disk outer radius must be positive");
     }
     if (scene.disk.density_scale < 0.0 ||
         scene.disk.temperature_scale <= 0.0 ||

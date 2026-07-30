@@ -11,6 +11,7 @@ namespace gargantua::reference {
 struct ReferenceTracerInfo {
     std::string solar_version;
     std::string physics_contract;
+    double outer_horizon_radius_M;
     double capture_radius_M;
 };
 

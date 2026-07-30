@@ -38,6 +38,7 @@
     "solver": "kerr-separated-mino",
     "direction": "observer-to-past",
     "photon_orientation": "future-directed",
+    "outer_horizon_radius_M": 1.8660254037844386,
     "capture_radius_M": 1.8670254037844385,
     "hamiltonian_gate": 1e-10,
     "energy_gate": 1e-12,

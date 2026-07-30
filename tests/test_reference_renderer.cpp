@@ -103,7 +103,7 @@ public:
 
 private:
     ReferenceTracerInfo info_{
-        "test-solar", "test-contract", 2.1};
+        "test-solar", "test-contract", 2.0, 2.1};
 };
 
 } // namespace

@@ -197,6 +197,21 @@ int main() {
     check("Solar rejects disk outer edge inside ISCO",
           !rejected);
 
+    ReferenceScene near_horizon_observer =
+        reference_scene_defaults();
+    near_horizon_observer.spin_chi = 0.0;
+    near_horizon_observer.observer_radius_M = 3.0;
+    check(
+        "Solar rejects observer without one-M horizon clearance",
+        !make_solar_kerr_ray_tracer(near_horizon_observer));
+
+    ReferenceScene disk_inside_horizon =
+        reference_scene_defaults();
+    disk_inside_horizon.disk.outer_radius_M = 1.8;
+    check(
+        "Solar rejects disk outer edge inside the Kerr horizon",
+        !make_solar_kerr_ray_tracer(disk_inside_horizon));
+
     std::cout << "\n=== Results: " << passed << " passed, "
               << failed << " failed ===\n";
     return failed == 0 ? 0 : 1;

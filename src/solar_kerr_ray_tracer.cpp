@@ -41,10 +41,12 @@ public:
           info_{
               std::string(solar::version),
               std::string(solar::physics_contract),
+              metric_.outer_horizon_radius(),
               metric_.outer_horizon_radius() +
                   reference_capture_margin_fraction *
                       scene.mass_M} {
-        detail::validate_solar_kerr_path_scene(scene);
+        detail::validate_solar_kerr_path_scene(
+            metric_, scene);
     }
 
     const ReferenceTracerInfo& info() const noexcept override {

@@ -127,6 +127,8 @@ std::string serialize_reference_manifest(
            << "\"direction\":\"observer-to-past\","
            << "\"photon_orientation\":\"future-directed\","
            << "\"capture_semantics\":\"interior_cutoff\","
+           << "\"outer_horizon_radius_M\":"
+           << frame.tracer.outer_horizon_radius_M << ','
            << "\"capture_radius_M\":"
            << frame.tracer.capture_radius_M << ','
            << "\"surface_model\":\"analytic-circular-thin-disk\","

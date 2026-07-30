@@ -137,13 +137,13 @@ int main() {
               "gargantua-render-reference",
               "--output", "frame",
               "--exposure", "0"}));
-    check("disk outer radius inside the horizon is rejected",
-          !parse({
+    check("parser defers Kerr disk-domain checks to Solar",
+          bool(parse({
               "gargantua-render-reference",
               "--output", "frame",
               "--mass-M", "1",
               "--spin", "0",
-              "--disk-outer-r-M", "1.5"}));
+              "--disk-outer-r-M", "1.5"})));
 
     const ReferenceRenderParse valid = parse({
         "gargantua-render-reference",

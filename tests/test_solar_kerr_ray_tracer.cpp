@@ -39,8 +39,15 @@ int main() {
         return 1;
     }
     check(
+        "Solar reports the Schwarzschild horizon",
+        std::fabs(
+            built.tracer->info().outer_horizon_radius_M -
+            2.0) < 1.0e-14);
+    check(
         "capture cutoff remains outside Schwarzschild horizon",
-        built.tracer->info().capture_radius_M > 2.0009 &&
+        built.tracer->info().capture_radius_M >
+                built.tracer->info().outer_horizon_radius_M &&
+            built.tracer->info().capture_radius_M > 2.0009 &&
             built.tracer->info().capture_radius_M < 2.0011);
     check(
         "Solar package version retained",

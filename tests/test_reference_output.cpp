@@ -126,6 +126,7 @@ ReferenceFrame diagnostic_frame() {
         ReferenceTracerInfo{
             "0.2.0-alpha.1",
             "relativity-v3-phase2",
+            2.0,
             2.0001,
         },
         {
@@ -279,6 +280,9 @@ int main() {
               manifest.find(
                   "\"direction\":\"observer-to-past\"") !=
                   std::string::npos);
+    check("manifest records Solar-computed horizon metadata",
+          manifest.find("\"outer_horizon_radius_M\":2") !=
+              std::string::npos);
     check("manifest records all three output files",
           manifest.find("\"beauty.ppm\"") != std::string::npos &&
               manifest.find("\"classification.ppm\"") !=
@@ -405,6 +409,24 @@ int main() {
         !write_reference_generation(
             test_root / "invalid-tracer",
             invalid_tracer));
+
+    ReferenceFrame invalid_horizon = frame;
+    invalid_horizon.tracer.outer_horizon_radius_M =
+        std::numeric_limits<double>::quiet_NaN();
+    check(
+        "non-finite Solar horizon metadata is rejected",
+        !write_reference_generation(
+            test_root / "invalid-horizon",
+            invalid_horizon));
+
+    ReferenceFrame capture_inside_horizon = frame;
+    capture_inside_horizon.tracer.capture_radius_M =
+        capture_inside_horizon.tracer.outer_horizon_radius_M;
+    check(
+        "capture cutoff at the Solar horizon is rejected",
+        !write_reference_generation(
+            test_root / "capture-inside-horizon",
+            capture_inside_horizon));
 
     ReferenceFrame invalid_accepted_diagnostics = frame;
     invalid_accepted_diagnostics.rays[0].max_constraint_error =

@@ -19,6 +19,7 @@ struct SolarKerrPathTrace {
 };
 
 void validate_solar_kerr_path_scene(
+    const solar::relativity::KerrBoyerLindquistMetric& metric,
     const ReferenceScene& scene);
 
 SolarKerrPathTrace trace_solar_kerr_path(

@@ -36,7 +36,19 @@ SolarKerrPathTrace transfer_failure(
 } // namespace
 
 void validate_solar_kerr_path_scene(
+    const KerrBoyerLindquistMetric& metric,
     const ReferenceScene& scene) {
+    const double horizon_radius =
+        metric.outer_horizon_radius();
+    if (scene.observer_radius_M <=
+        horizon_radius + scene.mass_M) {
+        throw std::invalid_argument(
+            "observer must remain at least 1 M outside the horizon");
+    }
+    if (scene.disk.outer_radius_M <= horizon_radius) {
+        throw std::invalid_argument(
+            "disk outer radius must remain outside the horizon");
+    }
     validate_solar_thin_disk_scene(scene);
     if (is_solar_equatorial_plane(
             scene.inclination_radians) &&

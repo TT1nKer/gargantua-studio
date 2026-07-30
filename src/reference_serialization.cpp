@@ -56,15 +56,14 @@ bool frame_shape_is_consistent(const ReferenceFrame& frame) {
     }
     if (frame.tracer.solar_version.empty() ||
         frame.tracer.physics_contract.empty() ||
+        !std::isfinite(
+            frame.tracer.outer_horizon_radius_M) ||
         !std::isfinite(frame.tracer.capture_radius_M)) {
         return false;
     }
-    const double horizon_radius =
-        frame.scene.mass_M *
-        (1.0 + std::sqrt(
-            1.0 -
-            frame.scene.spin_chi * frame.scene.spin_chi));
-    if (frame.tracer.capture_radius_M <= horizon_radius ||
+    if (frame.tracer.outer_horizon_radius_M <= 0.0 ||
+        frame.tracer.capture_radius_M <=
+            frame.tracer.outer_horizon_radius_M ||
         frame.tracer.capture_radius_M >=
             frame.scene.observer_radius_M) {
         return false;

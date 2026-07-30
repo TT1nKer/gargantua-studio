@@ -21,6 +21,19 @@ if [ "$invalid_code" -ne 2 ]; then
     exit 1
 fi
 
+set +e
+"$renderer" \
+    --output "$test_root/inside-horizon" \
+    --mass-M 1 \
+    --spin 0 \
+    --disk-outer-r-M 1.5 >/dev/null 2>&1
+physics_code=$?
+set -e
+if [ "$physics_code" -ne 3 ]; then
+    echo "invalid Kerr domain returned $physics_code instead of 3" >&2
+    exit 1
+fi
+
 output="$test_root/reference-frame"
 render_result="$test_root/render-result.json"
 "$renderer" \

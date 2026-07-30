@@ -54,6 +54,12 @@ int main() {
     check("zero mass is rejected",
           !validate_reference_scene(zero_mass));
 
+    ReferenceScene negative_observer_radius = defaults;
+    negative_observer_radius.observer_radius_M = -1.0;
+    check("negative observer radius is rejected",
+          !validate_reference_scene(
+              negative_observer_radius));
+
     ReferenceScene negative_extremal_spin = defaults;
     negative_extremal_spin.spin_chi = -1.0;
     check("negative extremal spin is rejected",
@@ -93,8 +99,9 @@ int main() {
     ReferenceScene near_horizon_observer = defaults;
     near_horizon_observer.spin_chi = 0.0;
     near_horizon_observer.observer_radius_M = 3.0;
-    check("observer without 1 M horizon clearance is rejected",
-          !validate_reference_scene(near_horizon_observer));
+    check("generic validation defers Kerr observer-domain checks",
+          bool(validate_reference_scene(
+              near_horizon_observer)));
 
     ReferenceScene invalid_escape = defaults;
     invalid_escape.escape_radius_M =
@@ -131,8 +138,14 @@ int main() {
 
     ReferenceScene disk_inside_horizon = defaults;
     disk_inside_horizon.disk.outer_radius_M = 1.8;
-    check("disk outer edge inside horizon is rejected",
-          !validate_reference_scene(disk_inside_horizon));
+    check("generic validation defers Kerr disk-domain checks",
+          bool(validate_reference_scene(
+              disk_inside_horizon)));
+
+    ReferenceScene negative_disk_radius = defaults;
+    negative_disk_radius.disk.outer_radius_M = -1.0;
+    check("negative disk outer radius is rejected",
+          !validate_reference_scene(negative_disk_radius));
 
     ReferenceScene zero_crossings = defaults;
     zero_crossings.disk.max_crossings = 0;
