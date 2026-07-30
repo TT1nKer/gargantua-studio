@@ -23,3 +23,8 @@ ctest --test-dir build --output-on-failure
 Omit `GARGANTUA_SOLAR_SOURCE_DIR` to fetch the same commit from the canonical
 Solar repository after that commit has been published. Generated artifacts
 must record the Solar version and physics contract.
+
+## Validation
+
+The first external-library call is documented in
+[`docs/validation/00_solar_consumer.md`](docs/validation/00_solar_consumer.md).
