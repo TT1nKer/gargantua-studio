@@ -2,74 +2,29 @@
 
 #include "gargantua/reference/reference_numerics.h"
 #include "reference_ray_evidence.h"
-#include "solar/relativity/geodesic_integrator.h"
+#include "solar_kerr_path.h"
 #include "solar/relativity/kerr_bl_metric.h"
-#include "solar/relativity/kerr_constants.h"
-#include "solar/relativity/local_initialization.h"
 #include "solar/relativity/observer.h"
 #include "solar/version.h"
 
-#include <cmath>
-#include <limits>
 #include <stdexcept>
-#include <vector>
 
 namespace gargantua::reference {
 namespace {
 
 using namespace solar::relativity;
 
-const char* termination_reason_name(
-    TerminationReason reason) noexcept {
-    switch (reason) {
-    case TerminationReason::HorizonCrossing:
-        return "horizon_crossing";
-    case TerminationReason::InteriorCutoff:
-        return "interior_cutoff";
-    case TerminationReason::Escaped:
-        return "escaped";
-    case TerminationReason::DiskSurfaceHit:
-        return "disk_surface_hit";
-    case TerminationReason::MaterialSurfaceHit:
-        return "material_surface_hit";
-    case TerminationReason::RadialTurningPoint:
-        return "radial_turning_point";
-    case TerminationReason::PolarTurningPoint:
-        return "polar_turning_point";
-    case TerminationReason::NearCriticalOrbit:
-        return "near_critical_orbit";
-    case TerminationReason::MaxAffine:
-        return "max_affine";
-    case TerminationReason::MaxProperTime:
-        return "max_proper_time";
-    case TerminationReason::MaxCoordinateTime:
-        return "max_coordinate_time";
-    case TerminationReason::MaxSteps:
-        return "max_steps";
-    case TerminationReason::StepUnderflow:
-        return "step_underflow";
-    case TerminationReason::InvalidMetricPoint:
-        return "invalid_metric_point";
-    case TerminationReason::NonFiniteState:
-        return "non_finite_state";
-    case TerminationReason::ConstraintViolation:
-        return "constraint_violation";
-    case TerminationReason::EventRootFailure:
-        return "event_root_failure";
-    case TerminationReason::UserEvent:
-        return "user_event";
-    }
-    return "unknown";
-}
-
 ObserverFrame make_render_observer(
     const KerrBoyerLindquistMetric& metric,
     const ReferenceScene& scene) {
-    const Contravariant4 position{
-        Vec4{{0.0, scene.observer_radius_M,
-              scene.inclination_radians, 0.0}}};
-    const ObserverResult observer =
-        make_zamo_observer(metric, position);
+    const ObserverResult observer = make_zamo_observer(
+        metric,
+        Contravariant4{Vec4{{
+            0.0,
+            scene.observer_radius_M,
+            scene.inclination_radians,
+            0.0,
+        }}});
     if (!observer) {
         throw std::invalid_argument(
             "cannot construct render ZAMO: " + observer.message);
@@ -80,50 +35,16 @@ ObserverFrame make_render_observer(
 class SolarKerrRayTracer final : public ReferenceRayTracer {
 public:
     explicit SolarKerrRayTracer(const ReferenceScene& scene)
-        : metric_(scene.mass_M, scene.spin_chi),
+        : scene_(scene),
+          metric_(scene.mass_M, scene.spin_chi),
           observer_(make_render_observer(metric_, scene)),
-          integrator_(metric_),
-          config_(GeodesicIntegrationConfig::cpu_reference(
-              GeodesicKind::Null,
-              scene.mass_M,
-              -scene.initial_step_M,
-              scene.max_step_M,
-              scene.max_affine_M)),
           info_{
               std::string(solar::version),
               std::string(solar::physics_contract),
               metric_.outer_horizon_radius() +
                   reference_capture_margin_fraction *
                       scene.mass_M} {
-        config_.monitor_energy = true;
-        config_.monitor_lz = true;
-        config_.carter_evaluator =
-            [this](const PhaseSpaceState& state) {
-                return evaluate_kerr_constants(
-                    metric_, state, GeodesicKind::Null).Q;
-            };
-
-        const double root_tolerance = 1.0e-10 * scene.mass_M;
-        const double capture_radius = info_.capture_radius_M;
-        events_.push_back(GeodesicEvent{
-            "bl-capture-cutoff",
-            [capture_radius](const PhaseSpaceState& state) {
-                return state.x.v[1] - capture_radius;
-            },
-            EventDirection::Decreasing,
-            TerminationReason::InteriorCutoff,
-            root_tolerance,
-        });
-        const double escape_radius = scene.escape_radius_M;
-        events_.push_back(GeodesicEvent{
-            "escape-radius",
-            [escape_radius](const PhaseSpaceState& state) {
-                return state.x.v[1] - escape_radius;
-            },
-            EventDirection::Increasing,
-            TerminationReason::Escaped,
-            root_tolerance,
-        });
+        detail::validate_solar_kerr_path_scene(scene);
     }
 
     const ReferenceTracerInfo& info() const noexcept override {
@@ -132,21 +53,10 @@ public:
 
     ReferenceRayResult trace(
         const CameraRay& ray) const override {
-        const InitialStateResult initial = initialize_local_photon(
-            metric_,
-            observer_,
-            Vec3{{ray.local_direction[0],
-                  ray.local_direction[1],
-                  ray.local_direction[2]}});
-        if (!initial) {
-            return detail::unavailable_reference_ray(
-                RayClassification::InitializationError,
-                "initialization_error");
-        }
-
         try {
-            return classify(integrator_.integrate(
-                *initial.state, config_, events_));
+            return detail::trace_solar_kerr_path(
+                       metric_, observer_, scene_, ray)
+                .ray;
         } catch (const std::exception&) {
             return detail::unavailable_reference_ray(
                 RayClassification::Unconverged,
@@ -155,74 +65,10 @@ public:
     }
 
 private:
-    static ReferenceRayResult classify(
-        const GeodesicIntegrationResult& integrated) {
-        const IntegrationDiagnostics& diagnostics =
-            integrated.diagnostics;
-        RayClassification classification =
-            RayClassification::Unconverged;
-        if (diagnostics.reason == TerminationReason::InteriorCutoff) {
-            classification =
-                RayClassification::CapturedAtBlCutoff;
-        } else if (diagnostics.reason == TerminationReason::Escaped) {
-            classification = RayClassification::Escaped;
-        } else if (
-            diagnostics.reason ==
-            TerminationReason::ConstraintViolation) {
-            classification =
-                RayClassification::ConstraintViolation;
-        }
-
-        const double final_radius =
-            integrated.final_state.x.v[1];
-        const bool invariant_gate_passed =
-            std::isfinite(final_radius) &&
-            std::isfinite(diagnostics.max_constraint_error) &&
-            diagnostics.max_constraint_error <
-                reference_hamiltonian_error_gate &&
-            std::isfinite(diagnostics.max_energy_rel_error) &&
-            diagnostics.max_energy_rel_error <
-                reference_stationary_invariant_error_gate &&
-            std::isfinite(diagnostics.max_lz_rel_error) &&
-            diagnostics.max_lz_rel_error <
-                reference_stationary_invariant_error_gate &&
-            std::isfinite(diagnostics.max_carter_rel_error) &&
-            diagnostics.max_carter_rel_error <
-                reference_carter_relative_error_gate;
-        if (!invariant_gate_passed &&
-            !is_failed_classification(classification)) {
-            classification =
-                RayClassification::ConstraintViolation;
-        }
-
-        return ReferenceRayResult{
-            classification,
-            termination_reason_name(diagnostics.reason),
-            integrated.final_state.affine,
-            final_radius,
-            final_radius,
-            0.0,
-            diagnostics.max_constraint_error,
-            diagnostics.max_energy_rel_error,
-            diagnostics.max_lz_rel_error,
-            diagnostics.max_carter_rel_error,
-            diagnostics.accepted_steps,
-            diagnostics.rejected_steps,
-            std::numeric_limits<double>::quiet_NaN(),
-            std::numeric_limits<double>::quiet_NaN(),
-            std::numeric_limits<double>::quiet_NaN(),
-            0.0,
-            0.0,
-            0,
-        };
-    }
-
+    ReferenceScene scene_;
     KerrBoyerLindquistMetric metric_;
     ObserverFrame observer_;
-    GeodesicIntegrator integrator_;
-    GeodesicIntegrationConfig config_;
     ReferenceTracerInfo info_;
-    std::vector<GeodesicEvent> events_;
 };
 
 } // namespace

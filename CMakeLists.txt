@@ -45,6 +45,10 @@ add_library(
     src/reference_renderer.cpp
     src/reference_scene.cpp
     src/reference_serialization.cpp
+    src/solar_kerr_path.cpp
+    src/solar_kerr_path_result.cpp
+    src/solar_kerr_path_setup.cpp
+    src/solar_thin_disk.cpp
     src/solar_kerr_ray_tracer.cpp)
 target_compile_features(gargantua_reference PUBLIC cxx_std_17)
 target_include_directories(
@@ -123,6 +127,23 @@ if(GARGANTUA_BUILD_TESTS)
     add_test(
         NAME gargantua.solar_kerr_ray_tracer
         COMMAND test-solar-kerr-ray-tracer)
+
+    add_executable(
+        test-solar-kerr-path
+        tests/test_solar_kerr_path.cpp)
+    target_compile_features(
+        test-solar-kerr-path
+        PRIVATE cxx_std_17)
+    target_include_directories(
+        test-solar-kerr-path
+        PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
+    target_link_libraries(
+        test-solar-kerr-path
+        PRIVATE gargantua_reference Solar::Relativity)
+    gargantua_enable_warnings(test-solar-kerr-path)
+    add_test(
+        NAME gargantua.solar_kerr_path
+        COMMAND test-solar-kerr-path)
 
     add_executable(
         test-reference-renderer

@@ -6,7 +6,7 @@
 
 **Architecture:** Gargantua keeps its existing `ReferenceRayTracer` boundary, but splits the Solar adapter into construction, separated-path orchestration, and evidence validation. Solar owns every metric/geodesic/redshift/disk calculation; Gargantua owns scene validation, event continuation policy, frame traversal, display encoding, and atomic artifacts.
 
-**Tech Stack:** C++17, CMake 3.20+, Solar `Solar::Relativity` at locked merge commit `35aaf231edb847a95c7239c51f63e01b34c2051b`, PPM/CSV/JSON zero-runtime-dependency artifacts, CTest, AppleClang/GCC, ASan/UBSan.
+**Tech Stack:** C++17, CMake 3.20+, Solar `Solar::Relativity` at locked merge commit `5459a53dfc7b76aa4e391c535a4488a441ba1c5c`, PPM/CSV/JSON zero-runtime-dependency artifacts, CTest, AppleClang/GCC, ASan/UBSan.
 
 ## Global Constraints
 
@@ -117,7 +117,7 @@ not contain one or more new public headers.
 Set:
 
 ```cmake
-set(GARGANTUA_SOLAR_COMMIT "35aaf231edb847a95c7239c51f63e01b34c2051b")
+set(GARGANTUA_SOLAR_COMMIT "5459a53dfc7b76aa4e391c535a4488a441ba1c5c")
 set(GARGANTUA_SOLAR_VERSION "0.2.0-alpha.1")
 set(GARGANTUA_SOLAR_PHYSICS_CONTRACT "relativity-v3-phase2")
 ```
@@ -455,6 +455,12 @@ git commit -m "test: enforce physical ray evidence"
 **Files:**
 - Create: `src/solar_kerr_path.h`
 - Create: `src/solar_kerr_path.cpp`
+- Create: `src/solar_kerr_path_result.h`
+- Create: `src/solar_kerr_path_result.cpp`
+- Create: `src/solar_kerr_path_setup.h`
+- Create: `src/solar_kerr_path_setup.cpp`
+- Create: `src/solar_thin_disk.h`
+- Create: `src/solar_thin_disk.cpp`
 - Modify: `src/solar_kerr_ray_tracer.cpp`
 - Modify: `CMakeLists.txt`
 - Create: `tests/test_solar_kerr_path.cpp`
@@ -482,7 +488,7 @@ SolarKerrPathTrace trace_solar_kerr_path(
 verify continuation through outside-support equatorial roots. The public
 `ReferenceRayTracer` returns only its `ray`.
 
-- [ ] **Step 1: Write a negative-affine integration test**
+- [x] **Step 1: Write a negative-affine integration test**
 
 For the center camera ray, require:
 
@@ -497,7 +503,7 @@ check("center ray does not fabricate escape",
 
 Add an ordinary corner ray that escapes with finite min radius and winding.
 
-- [ ] **Step 2: Write disk and continuation tests**
+- [x] **Step 2: Write disk and continuation tests**
 
 Use `spin_chi=0.5`, `observer_radius_M=30`, inclination `85 degrees`,
 `disk.outer_radius_M=20`, and the existing camera FOV. Search the fixed
@@ -522,7 +528,7 @@ For semi-transparent mode with optical depth `0.5`, scan the same grid and
 require at least one successful ray with `disk_crossings >= 2`. The scan is a
 deterministic acceptance search, not random fixture discovery.
 
-- [ ] **Step 3: Register the new test and verify red**
+- [x] **Step 3: Register the new test and verify red**
 
 Give `test-solar-kerr-path` a private
 `${CMAKE_CURRENT_SOURCE_DIR}/src` include directory, then run:
@@ -533,7 +539,7 @@ cmake --build build-phase5 --target test-solar-kerr-path --parallel 4
 
 Expected: compile failure because `solar_kerr_path.h` does not exist.
 
-- [ ] **Step 4: Construct Solar disk and event objects**
+- [x] **Step 4: Construct Solar disk and event objects**
 
 Map `ScientificDiskScene` exactly:
 
@@ -568,7 +574,7 @@ ThinDiskCrossingRecorder recorder(
 Build capture, escape, and equatorial events with root tolerance
 `1e-10 * mass_M`.
 
-- [ ] **Step 5: Implement the segment loop**
+- [x] **Step 5: Implement the segment loop**
 
 Initialize one future-directed observer photon, then use:
 
@@ -605,13 +611,13 @@ Reject non-finite or near-zero `directed_change`; do not nudge the event state.
 Stop explicitly when remaining affine is exhausted or the recorder reports a
 transfer/crossing-limit error.
 
-- [ ] **Step 6: Recompute final invariant drift**
+- [x] **Step 6: Recompute final invariant drift**
 
 Evaluate final `E`, `Lz`, and `Q` with Solar. Use v3 denominators
 `max(1, abs(initial))`, preserve the maximum Carter diagnostic reported by
 segments, and validate all results before returning success.
 
-- [ ] **Step 7: Reduce the public tracer to construction/delegation**
+- [x] **Step 7: Reduce the public tracer to construction/delegation**
 
 `SolarKerrRayTracer::trace` becomes:
 
@@ -624,7 +630,7 @@ The object stores a copy of `ReferenceScene`; generic integrator/event members
 leave this file. Keep `ReferenceTracerInfo` construction and the BL cutoff
 description here.
 
-- [ ] **Step 8: Run path and tracer tests**
+- [x] **Step 8: Run path and tracer tests**
 
 ```sh
 cmake --build build-phase5 --target test-solar-kerr-path \
@@ -636,7 +642,7 @@ cmake --build build-phase5 --target test-solar-kerr-path \
 Expected: all assertions pass, with nonzero capture/escape/disk populations and
 at least one multi-crossing semi-transparent ray.
 
-- [ ] **Step 9: Run two mutation checks**
+- [x] **Step 9: Run two mutation checks**
 
 Mutation A: make the Mino step positive. Rebuild and require the
 negative-affine test to fail.
@@ -647,7 +653,7 @@ endpoint detection or crossing exhaustion.
 
 Restore both mutations with `apply_patch`, rebuild, and require green.
 
-- [ ] **Step 10: Commit the Solar path**
+- [x] **Step 10: Commit the Solar path**
 
 ```sh
 git add CMakeLists.txt src/solar_kerr_path.h src/solar_kerr_path.cpp \

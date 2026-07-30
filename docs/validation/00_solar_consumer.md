@@ -22,13 +22,18 @@ torus is kinematic; neither is GRMHD.
 
 ## Solar dependency
 
-- Git commit: `35aaf231edb847a95c7239c51f63e01b34c2051b`
+- Git commit: `5459a53dfc7b76aa4e391c535a4488a441ba1c5c`
 - Package version: `0.2.0-alpha.1`
 - Physics contract: `relativity-v3-phase2`
 - Public target: `Solar::Relativity`
 
 The physics-contract label predates Phase 5. Generated evidence must therefore
 retain the exact Git commit as well as the package identifiers.
+
+This lock includes Solar PR #10's consumer-driven correction: material
+support is checked before circular four-velocity construction, so exact
+equatorial events inside the Solar-owned ISCO remain vacuum samples instead
+of false transfer failures.
 
 ## Command
 
