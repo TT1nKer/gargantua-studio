@@ -921,7 +921,7 @@ git commit -m "feat: configure scientific disk references"
 - Produces: a pinned compact fixture containing scene parameters, counts,
   numerical maxima, and checksums; it does not contain a copied binary image.
 
-- [ ] **Step 1: Render two clean generations**
+- [x] **Step 1: Render two clean generations**
 
 From a clean committed worktree:
 
@@ -955,7 +955,7 @@ From a clean committed worktree:
   --exposure 1
 ```
 
-- [ ] **Step 2: Require byte identity**
+- [x] **Step 2: Require byte identity**
 
 ```sh
 cmp artifacts/scientific-reference-v2/beauty.ppm \
@@ -970,7 +970,7 @@ cmp artifacts/scientific-reference-v2/manifest.json \
 
 Expected: every comparison exits 0.
 
-- [ ] **Step 3: Run physical accounting checks**
+- [x] **Step 3: Run physical accounting checks**
 
 Use a small read-only shell/AWK check:
 
@@ -983,14 +983,14 @@ Use a small read-only shell/AWK check:
 - every accepted max invariant is below its declared gate;
 - every advanced final affine value is negative.
 
-- [ ] **Step 4: Retain the Schwarzschild boundary check**
+- [x] **Step 4: Retain the Schwarzschild boundary check**
 
 Render the existing `64 x 64`, spin-zero, inclination-90 fixture with a disk
 outer radius set below the analytic shadow-screen comparison region. Derive
 the captured bounding box from classification, and require the analytic local
 shadow radius to remain inside the one-pixel bracket.
 
-- [ ] **Step 5: Inspect the generated beauty**
+- [x] **Step 5: Inspect the generated beauty**
 
 Convert PPM to a temporary PNG only if a locally available zero-loss tool can
 do so, then inspect it. Verify:
@@ -1002,7 +1002,7 @@ do so, then inspect it. Verify:
 
 The PNG is inspection-only and is not the scientific artifact.
 
-- [ ] **Step 6: Write fixture and validation report**
+- [x] **Step 6: Write fixture and validation report**
 
 `tests/fixtures/scientific_reference_v2.json` records exact inputs, Solar and
 Gargantua commits, population counts, maxima, and checksums from the accepted
@@ -1012,13 +1012,13 @@ generation.
 template: claim, model boundary, references, commands, inputs, expected,
 actual, error, result, limitations, and fastest falsification.
 
-- [ ] **Step 7: Update README without cinema claims**
+- [x] **Step 7: Update README without cinema claims**
 
 Document the new four-file generation, scientific grayscale transform,
 observer-to-past convention, Phase 5 lock, and explicit missing film
 capabilities.
 
-- [ ] **Step 8: Commit accepted evidence**
+- [x] **Step 8: Commit accepted evidence**
 
 ```sh
 git add README.md docs/validation/02_scientific_disk_reference.md \
