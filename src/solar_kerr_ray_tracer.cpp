@@ -36,6 +36,8 @@ const char* termination_reason_name(
         return "radial_turning_point";
     case TerminationReason::PolarTurningPoint:
         return "polar_turning_point";
+    case TerminationReason::NearCriticalOrbit:
+        return "near_critical_orbit";
     case TerminationReason::MaxAffine:
         return "max_affine";
     case TerminationReason::MaxProperTime:

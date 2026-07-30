@@ -23,7 +23,7 @@ film-look processing.
 
 The dependency is locked to:
 
-- Solar commit: `919e082b5e2473aac66ec364f22fd6838afd73b2`
+- Solar commit: `82acb4e6c60e1fa18447cf37370278d5ac9e82f8`
 - Solar package version: `0.2.0-alpha.1`
 - Solar physics contract: `relativity-v3-phase2`
 - Solar target: `Solar::Relativity`
@@ -45,11 +45,14 @@ and backward-ray tests.
 
 The accepted Kerr generation and its repeat were produced from a clean
 Gargantua worktree at
-`d846274f2e78af67752dccdd0d64a8c15045ca43`:
+`d7d23d6447a4519817a5542ed966913fb2bd8e01`. The final dependency-compatibility
+commit `b7b3ee1242cdd4fab0dd0f63b2ee5bce3ffe026a` was then rebuilt without
+warnings and rendered once more; its PPM and CSV were byte-identical to both
+accepted files:
 
 ```sh
 cmake -S . -B build \
-  -DGARGANTUA_SOLAR_SOURCE_DIR=/Users/hostsjim/project/solar/.worktrees/gargantua-bootstrap \
+  -DGARGANTUA_SOLAR_SOURCE_DIR=/path/to/solar-at-82acb4e6c60e1fa18447cf37370278d5ac9e82f8 \
   -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel
 
@@ -122,10 +125,12 @@ Both Kerr commands exited `0`:
 {"status":"complete","captured":218,"escaped":2086,"failed":0,"ppm_checksum_fnv1a64":"e572ca151ab8c4ee","csv_checksum_fnv1a64":"94671d7df84e4dc9"}
 ```
 
-The two runs took `2.63 s` and `2.65 s` wall time (`2.60 s` and `2.61 s`
-user CPU time) in the validation environment. All three files compared
-byte-for-byte equal. The manifest recorded Gargantua
-`d846274f2e78af67752dccdd0d64a8c15045ca43`, `dirty=false`, and the locked
+The two runs took `3.06 s` and `3.27 s` wall time (`2.83 s` and `2.99 s`
+user CPU time) in the validation environment. The final compatibility render
+took `2.96 s` wall time (`2.74 s` user CPU time). The repeated pair compared
+byte-for-byte across all three files; the final PPM and CSV also matched them.
+The final manifest recorded Gargantua
+`b7b3ee1242cdd4fab0dd0f63b2ee5bce3ffe026a`, `dirty=false`, and the locked
 Solar identity above.
 
 Kerr diagnostics:
@@ -149,7 +154,7 @@ checksum, were:
 ```text
 ed1e21cae38163adba4608572468b70923a9f0bc42391f7ae943ae6dff9ead4f  classification.ppm
 e161ec02d2d1db382d7528271744172d87c256151b82a2f76350c2c638dcf6e9  rays.csv
-47ade95c9c01c0d8482cd4671b5ea8ebcd7f79e1b4baadb72e9aceaf19fe747b  manifest.json
+5e550c8e8b5f281e2747bb47bfacf0253498295bd874a1536de39c86c66b8971  manifest.json
 ```
 
 The Schwarzschild run also exited `0`: `708` captured, `3388` escaped,
@@ -202,20 +207,23 @@ It is not evidence of a cinema-quality render.
 - The Kerr acceptance frame is checked against invariant gates and Solar's
   separately validated analytical shadow machinery, but this small finite
   observer raster is not an independent high-resolution Kerr boundary survey.
-- There is no minimum trajectory radius, azimuthal winding, selected event
-  history, disk-intersection stream, redshift, radiative transfer, adaptive
-  image sampling, CUDA path, CPU/GPU parity, OpenEXR, ACES, animation, or
-  beauty shading.
+- The locked Solar separated result exposes minimum radius and azimuthal
+  winding, but the reference raster result/schema does not yet carry them and
+  still uses the generic Hamiltonian path. There is no selected event history,
+  disk-intersection stream, redshift, radiative transfer, adaptive image
+  sampling, CUDA path, CPU/GPU parity, OpenEXR, ACES, animation, or beauty
+  shading.
 - FNV-1a detects accidental changes and determinism regressions; it is not a
   cryptographic authenticity mechanism. SHA-256 values above are external
   evidence, not part of schema v1.
 - Wall time is hardware and scheduling dependent and is not a performance
   acceptance gate.
 
-The next Solar-facing requirement is a bounded trajectory-diagnostics
-observer or result API that reports minimum radius, winding, and selected
-event history without retaining every integration step or importing
-Gargantua types.
+The next integration step is a dedicated reference-raster migration to the
+separated solver with whole-frame classification and invariant equivalence
+against the Hamiltonian baseline. The next Solar-facing capability remains
+bounded selected-event history and Kerr-Schild horizon/interior support
+without importing Gargantua types.
 
 ## Fastest falsification
 
