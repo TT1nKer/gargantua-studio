@@ -12,7 +12,7 @@
 
 - C++17 `double` Solar CPU physics is authoritative.
 - The metric is fixed Kerr Boyer-Lindquist with signature `(-,+,+,+)` and geometrized units `G=c=1`.
-- The capture event is a Boyer-Lindquist interior cutoff at `r_+ + 1e-5 M`; it is not a horizon-crossing claim.
+- The capture event is a Boyer-Lindquist interior cutoff at `r_+ + 1e-3 M`; it is not a horizon-crossing claim.
 - Accepted ordinary rays require Hamiltonian error `< 1e-10` and Carter relative error `< 1e-9`.
 - `MaxAffine`, `MaxSteps`, invalid, non-finite, event-root, and step failures may not be relabeled as escape.
 - Output mode is `ENGINE_DEBUG`; no disk, radiation, CUDA, OpenEXR, ACES, or beauty-image claim is permitted.
@@ -385,7 +385,8 @@ Its factory must:
 2. create `KerrBoyerLindquistMetric(scene.mass_M, scene.spin_chi)`;
 3. create a ZAMO at `{0, r, inclination, 0}`;
 4. compute `capture_radius_M = metric.outer_horizon_radius() +
-   1e-5 * scene.mass_M`;
+   1e-3 * scene.mass_M`; the smaller `1e-4 M` margin passed the radial ray
+   but failed the same `1e-10` Hamiltonian gate for off-axis raster rays;
 5. return an error result for any exception or failed observer.
 
 For each ray:
@@ -688,6 +689,7 @@ The fixed missing-capability array is:
   "disk_intersections",
   "redshift_and_radiative_transfer",
   "kerr_schild_horizon_crossing",
+  "bl_polar_axis_crossing",
   "separated_mino_solver",
   "cuda",
   "openexr_aces",
@@ -755,10 +757,12 @@ The shell test uses `mktemp -d` and asserts:
 
 - `--help` exits `0`;
 - an unknown option exits `2`;
-- a `9 x 9` Schwarzschild render exits `0`;
+- a `10 x 9` Schwarzschild render exits `0`; the even width avoids the exact
+  `Lz=0` screen column that intersects the Boyer-Lindquist polar coordinate
+  singularity;
 - all three output files exist;
 - a second render to the same output exits `5`;
-- manifest count totals equal `81`;
+- manifest count totals equal `90`;
 - manifest contains both captured and escaped rays;
 - manifest contains no failed rays.
 

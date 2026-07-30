@@ -161,12 +161,19 @@ For every pixel, `SolarKerrRayTracer`:
 The capture radius is:
 
 ```text
-r_capture = r_+ + 1e-5 M
+r_capture = r_+ + 1e-3 M
 ```
 
 This event is an `InteriorCutoff`, not a claimed Boyer-Lindquist horizon
-crossing. Gargantua classifies it as `captured_at_bl_cutoff`. The escape event
-uses Solar's `Escaped` termination reason.
+crossing. The margin was established by the radial-ray constraint gate:
+`1e-5 M` reached normalized Hamiltonian error `1.0225e-10`. Although the
+radial ray passed at `1e-4 M`, a 128 by 128 Schwarzschild raster exposed 22
+off-axis rays just above the same gate, with a maximum of `1.0502e-10`.
+Reducing the integration step did not remove that near-horizon conditioning
+failure. Moving the explicit cutoff to `1e-3 M` made the focused regression
+ray pass without weakening the required `1e-10` gate. Gargantua classifies
+the event as `captured_at_bl_cutoff`. The escape event uses Solar's `Escaped`
+termination reason.
 
 An ordinary ray is accepted only when:
 
@@ -246,6 +253,11 @@ The manifest records:
 - explicit missing capabilities;
 - status `complete` or `diagnostic_failed`.
 
+Gargantua commit and dirty-state metadata is refreshed before each build and
+compiled into the binary. It must not be a configure-time-only snapshot,
+because a later commit or source edit would otherwise produce a plausible but
+stale manifest.
+
 FNV-1a is named in the manifest and is only an accidental-corruption and
 determinism checksum, not a cryptographic authenticity claim.
 
@@ -256,6 +268,11 @@ must both be absent at start. The parent must exist. The manifest is written
 last inside the part directory. A failed render keeps diagnostic output only
 when all files can be finalized; otherwise the part directory remains visible
 and the command returns nonzero.
+
+Before serialization, the writer recomputes classification counts, failure
+counts, diagnostic maxima, and step maxima from the retained ray vector. It
+rejects unknown classifications or status values, non-finite tracer metadata,
+and any caller-supplied summary that differs from the derived evidence.
 
 ## 10. CLI contract
 
@@ -303,6 +320,7 @@ Focused unit and integration tests cover:
 - exact PPM dimensions and palette;
 - CSV row count and header;
 - manifest contract fields, counts, missing-capability list, and checksums;
+- build provenance across clean, dirty, and advanced Git states;
 - output-directory collision and atomic part-directory behavior;
 - CLI success, help, malformed option, and failure exit codes.
 
@@ -326,6 +344,7 @@ This slice explicitly does not provide:
 - disk crossings or multiple intersections;
 - redshift or invariant radiative transfer;
 - Kerr-Schild horizon crossing;
+- Boyer-Lindquist rays that intersect the polar coordinate axis;
 - separated/Mino-time high-throughput tracing;
 - CUDA, OpenEXR, ACES, animation, or a beauty image.
 
