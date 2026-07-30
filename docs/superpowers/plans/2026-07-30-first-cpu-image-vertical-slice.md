@@ -689,6 +689,7 @@ The fixed missing-capability array is:
   "disk_intersections",
   "redshift_and_radiative_transfer",
   "kerr_schild_horizon_crossing",
+  "bl_polar_axis_crossing",
   "separated_mino_solver",
   "cuda",
   "openexr_aces",
@@ -756,10 +757,12 @@ The shell test uses `mktemp -d` and asserts:
 
 - `--help` exits `0`;
 - an unknown option exits `2`;
-- a `9 x 9` Schwarzschild render exits `0`;
+- a `10 x 9` Schwarzschild render exits `0`; the even width avoids the exact
+  `Lz=0` screen column that intersects the Boyer-Lindquist polar coordinate
+  singularity;
 - all three output files exist;
 - a second render to the same output exits `5`;
-- manifest count totals equal `81`;
+- manifest count totals equal `90`;
 - manifest contains both captured and escaped rays;
 - manifest contains no failed rays.
 

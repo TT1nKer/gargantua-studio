@@ -329,6 +329,7 @@ This slice explicitly does not provide:
 - disk crossings or multiple intersections;
 - redshift or invariant radiative transfer;
 - Kerr-Schild horizon crossing;
+- Boyer-Lindquist rays that intersect the polar coordinate axis;
 - separated/Mino-time high-throughput tracing;
 - CUDA, OpenEXR, ACES, animation, or a beauty image.
 

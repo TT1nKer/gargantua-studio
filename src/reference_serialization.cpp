@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <locale>
 #include <sstream>
+#include <utility>
 
 namespace gargantua::reference::detail {
 namespace {
@@ -111,8 +112,10 @@ std::string canonical_scene(const ReferenceScene& scene) {
 SerializedReferenceGeneration serialize_reference_generation(
     const ReferenceFrame& frame) {
     if (!frame_shape_is_consistent(frame)) {
-        return SerializedReferenceGeneration{
-            false, "reference frame shape or summary is inconsistent"};
+        SerializedReferenceGeneration failure;
+        failure.message =
+            "reference frame shape or summary is inconsistent";
+        return failure;
     }
 
     std::ostringstream ppm_header;

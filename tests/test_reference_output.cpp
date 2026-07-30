@@ -168,6 +168,9 @@ int main() {
               std::string::npos);
     check("manifest records missing beauty capability",
           manifest.find("\"beauty_render\"") != std::string::npos);
+    check("manifest records BL polar-axis limitation",
+          manifest.find("\"bl_polar_axis_crossing\"") !=
+              std::string::npos);
     check("writer returns nonzero PPM checksum",
           written.ppm_checksum != 0);
     check("writer returns nonzero CSV checksum",

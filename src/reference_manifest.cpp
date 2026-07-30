@@ -177,6 +177,7 @@ std::string serialize_reference_manifest(
            << "\"disk_intersections\","
            << "\"redshift_and_radiative_transfer\","
            << "\"kerr_schild_horizon_crossing\","
+           << "\"bl_polar_axis_crossing\","
            << "\"separated_mino_solver\","
            << "\"cuda\","
            << "\"openexr_aces\","
