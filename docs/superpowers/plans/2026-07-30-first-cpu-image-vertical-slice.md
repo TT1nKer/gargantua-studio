@@ -12,7 +12,7 @@
 
 - C++17 `double` Solar CPU physics is authoritative.
 - The metric is fixed Kerr Boyer-Lindquist with signature `(-,+,+,+)` and geometrized units `G=c=1`.
-- The capture event is a Boyer-Lindquist interior cutoff at `r_+ + 1e-4 M`; it is not a horizon-crossing claim.
+- The capture event is a Boyer-Lindquist interior cutoff at `r_+ + 1e-3 M`; it is not a horizon-crossing claim.
 - Accepted ordinary rays require Hamiltonian error `< 1e-10` and Carter relative error `< 1e-9`.
 - `MaxAffine`, `MaxSteps`, invalid, non-finite, event-root, and step failures may not be relabeled as escape.
 - Output mode is `ENGINE_DEBUG`; no disk, radiation, CUDA, OpenEXR, ACES, or beauty-image claim is permitted.
@@ -385,8 +385,8 @@ Its factory must:
 2. create `KerrBoyerLindquistMetric(scene.mass_M, scene.spin_chi)`;
 3. create a ZAMO at `{0, r, inclination, 0}`;
 4. compute `capture_radius_M = metric.outer_horizon_radius() +
-   1e-4 * scene.mass_M`; this keeps the validated radial ray below the
-   `1e-10` Hamiltonian gate without entering the failing `1e-5 M` margin;
+   1e-3 * scene.mass_M`; the smaller `1e-4 M` margin passed the radial ray
+   but failed the same `1e-10` Hamiltonian gate for off-axis raster rays;
 5. return an error result for any exception or failed observer.
 
 For each ray:

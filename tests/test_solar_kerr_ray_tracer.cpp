@@ -40,8 +40,8 @@ int main() {
     }
     check(
         "capture cutoff remains outside Schwarzschild horizon",
-        built.tracer->info().capture_radius_M > 2.0 &&
-            built.tracer->info().capture_radius_M < 2.001);
+        built.tracer->info().capture_radius_M > 2.0009 &&
+            built.tracer->info().capture_radius_M < 2.0011);
     check(
         "Solar package version retained",
         built.tracer->info().solar_version == "0.2.0-alpha.1");
@@ -78,6 +78,28 @@ int main() {
     check(
         "captured ray satisfies Carter gate",
         center.max_carter_rel_error < 1.0e-9);
+
+    ReferenceScene near_cutoff_scene = scene;
+    near_cutoff_scene.width = 64;
+    near_cutoff_scene.height = 64;
+    near_cutoff_scene.initial_step_M = 0.01;
+    near_cutoff_scene.max_step_M = 0.1;
+    ReferenceTracerBuild near_cutoff_built =
+        make_solar_kerr_ray_tracer(near_cutoff_scene);
+    check("near-cutoff regression tracer initializes",
+          bool(near_cutoff_built));
+    if (near_cutoff_built) {
+        const ReferenceRayResult near_cutoff =
+            near_cutoff_built.tracer->trace(
+                perspective_camera_ray(near_cutoff_scene, 25, 32));
+        check(
+            "near-cutoff regression ray is captured",
+            near_cutoff.classification ==
+                RayClassification::CapturedAtBlCutoff);
+        check(
+            "near-cutoff regression ray satisfies Hamiltonian gate",
+            near_cutoff.max_constraint_error < 1.0e-10);
+    }
 
     const ReferenceRayResult corner = built.tracer->trace(
         perspective_camera_ray(scene, 0, 0));

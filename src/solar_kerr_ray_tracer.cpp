@@ -21,7 +21,7 @@ using namespace solar::relativity;
 constexpr double hamiltonian_gate = 1.0e-10;
 constexpr double stationary_invariant_gate = 1.0e-12;
 constexpr double carter_gate = 1.0e-9;
-constexpr double capture_margin_fraction = 1.0e-4;
+constexpr double capture_margin_fraction = 1.0e-3;
 
 const char* termination_reason_name(
     TerminationReason reason) noexcept {
