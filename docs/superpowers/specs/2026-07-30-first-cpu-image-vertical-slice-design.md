@@ -269,6 +269,11 @@ last inside the part directory. A failed render keeps diagnostic output only
 when all files can be finalized; otherwise the part directory remains visible
 and the command returns nonzero.
 
+Before serialization, the writer recomputes classification counts, failure
+counts, diagnostic maxima, and step maxima from the retained ray vector. It
+rejects unknown classifications or status values, non-finite tracer metadata,
+and any caller-supplied summary that differs from the derived evidence.
+
 ## 10. CLI contract
 
 The executable is:

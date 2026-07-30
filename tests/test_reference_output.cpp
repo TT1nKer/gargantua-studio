@@ -6,6 +6,7 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -47,9 +48,14 @@ std::size_t line_count(const std::string& value) {
 }
 
 ReferenceRayResult ray(RayClassification classification) {
+    const char* termination_reason =
+        classification ==
+                RayClassification::CapturedAtBlCutoff
+            ? "interior_cutoff"
+            : ray_classification_name(classification);
     return ReferenceRayResult{
         classification,
-        ray_classification_name(classification),
+        termination_reason,
         3.0,
         1.0e-12,
         2.0e-14,
@@ -195,6 +201,70 @@ int main() {
               incomplete_output, incomplete));
     check("rejected frame creates no part directory",
           !fs::exists(incomplete_output.string() + ".part"));
+
+    ReferenceFrame mismatched_summary = frame;
+    mismatched_summary.rays[0] =
+        ray(RayClassification::Escaped);
+    check(
+        "summary that disagrees with rays is rejected",
+        !write_reference_generation(
+            test_root / "mismatched-summary",
+            mismatched_summary));
+
+    ReferenceFrame unknown_classification = frame;
+    unknown_classification.rays[0].classification =
+        static_cast<RayClassification>(99);
+    check(
+        "unknown ray classification is rejected",
+        !write_reference_generation(
+            test_root / "unknown-classification",
+            unknown_classification));
+
+    ReferenceFrame unknown_status = frame;
+    unknown_status.status = static_cast<FrameStatus>(99);
+    check(
+        "unknown frame status is rejected",
+        !write_reference_generation(
+            test_root / "unknown-status",
+            unknown_status));
+
+    ReferenceFrame invalid_tracer = frame;
+    invalid_tracer.tracer.capture_radius_M =
+        std::numeric_limits<double>::quiet_NaN();
+    check(
+        "non-finite tracer metadata is rejected",
+        !write_reference_generation(
+            test_root / "invalid-tracer",
+            invalid_tracer));
+
+    ReferenceFrame invalid_accepted_diagnostics = frame;
+    invalid_accepted_diagnostics.rays[0].max_constraint_error =
+        std::numeric_limits<double>::quiet_NaN();
+    check(
+        "non-finite accepted-ray diagnostics are rejected",
+        !write_reference_generation(
+            test_root / "invalid-accepted-diagnostics",
+            invalid_accepted_diagnostics));
+
+    ReferenceFrame contradictory_termination = frame;
+    contradictory_termination.rays[0].termination_reason =
+        "escaped";
+    check(
+        "contradictory successful termination is rejected",
+        !write_reference_generation(
+            test_root / "contradictory-termination",
+            contradictory_termination));
+
+    ReferenceFrame accepted_above_gate = frame;
+    accepted_above_gate.rays[0].max_constraint_error =
+        2.0e-10;
+    accepted_above_gate.summary.max_constraint_error =
+        2.0e-10;
+    check(
+        "accepted ray above invariant gate is rejected",
+        !write_reference_generation(
+            test_root / "accepted-above-gate",
+            accepted_above_gate));
 
     fs::remove_all(test_root);
     std::cout << "\n=== Results: " << passed << " passed, "

@@ -1,6 +1,7 @@
 #include "reference_manifest.h"
 
 #include "gargantua/build_metadata.h"
+#include "gargantua/reference/reference_numerics.h"
 #include "gargantua/version.h"
 
 #include <iomanip>
@@ -116,10 +117,14 @@ std::string serialize_reference_manifest(
            << "\"capture_semantics\":\"interior_cutoff\","
            << "\"capture_radius_M\":"
            << frame.tracer.capture_radius_M << ','
-           << "\"hamiltonian_gate\":1e-10,"
-           << "\"energy_gate\":1e-12,"
-           << "\"lz_gate\":1e-12,"
-           << "\"carter_gate\":1e-9"
+           << "\"hamiltonian_gate\":"
+           << reference_hamiltonian_error_gate << ','
+           << "\"energy_gate\":"
+           << reference_stationary_invariant_error_gate << ','
+           << "\"lz_gate\":"
+           << reference_stationary_invariant_error_gate << ','
+           << "\"carter_gate\":"
+           << reference_carter_relative_error_gate
            << "},"
            << "\"scene\":{"
            << "\"mass_M\":" << scene.mass_M << ','

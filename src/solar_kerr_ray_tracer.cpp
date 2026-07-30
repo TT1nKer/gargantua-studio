@@ -1,5 +1,6 @@
 #include "gargantua/reference/reference_ray_tracer.h"
 
+#include "gargantua/reference/reference_numerics.h"
 #include "solar/relativity/geodesic_integrator.h"
 #include "solar/relativity/kerr_bl_metric.h"
 #include "solar/relativity/kerr_constants.h"
@@ -17,11 +18,6 @@ namespace gargantua::reference {
 namespace {
 
 using namespace solar::relativity;
-
-constexpr double hamiltonian_gate = 1.0e-10;
-constexpr double stationary_invariant_gate = 1.0e-12;
-constexpr double carter_gate = 1.0e-9;
-constexpr double capture_margin_fraction = 1.0e-3;
 
 const char* termination_reason_name(
     TerminationReason reason) noexcept {
@@ -113,7 +109,8 @@ public:
               std::string(solar::version),
               std::string(solar::physics_contract),
               metric_.outer_horizon_radius() +
-                  capture_margin_fraction * scene.mass_M} {
+                  reference_capture_margin_fraction *
+                      scene.mass_M} {
         config_.monitor_energy = true;
         config_.monitor_lz = true;
         config_.carter_evaluator =
@@ -197,15 +194,17 @@ private:
         const bool invariant_gate_passed =
             std::isfinite(final_radius) &&
             std::isfinite(diagnostics.max_constraint_error) &&
-            diagnostics.max_constraint_error < hamiltonian_gate &&
+            diagnostics.max_constraint_error <
+                reference_hamiltonian_error_gate &&
             std::isfinite(diagnostics.max_energy_rel_error) &&
             diagnostics.max_energy_rel_error <
-                stationary_invariant_gate &&
+                reference_stationary_invariant_error_gate &&
             std::isfinite(diagnostics.max_lz_rel_error) &&
             diagnostics.max_lz_rel_error <
-                stationary_invariant_gate &&
+                reference_stationary_invariant_error_gate &&
             std::isfinite(diagnostics.max_carter_rel_error) &&
-            diagnostics.max_carter_rel_error < carter_gate;
+            diagnostics.max_carter_rel_error <
+                reference_carter_relative_error_gate;
         if (!invariant_gate_passed &&
             !is_failed_classification(classification)) {
             classification =

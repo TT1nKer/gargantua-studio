@@ -44,11 +44,18 @@ public:
                 : RayClassification::Escaped;
         if (ray.pixel_x == 2 && ray.pixel_y == 1) {
             classification =
-                RayClassification::ConstraintViolation;
+                unknown_at_last
+                    ? static_cast<RayClassification>(99)
+                    : RayClassification::ConstraintViolation;
         }
+        const char* termination_reason =
+            classification ==
+                    RayClassification::CapturedAtBlCutoff
+                ? "interior_cutoff"
+                : ray_classification_name(classification);
         return ReferenceRayResult{
             classification,
-            ray_classification_name(classification),
+            termination_reason,
             2.0 + static_cast<double>(ray.pixel_x),
             1.0e-12 * static_cast<double>(ray.pixel_x + 1),
             3.0e-14 * static_cast<double>(ray.pixel_x + 1),
@@ -61,6 +68,7 @@ public:
 
     mutable std::vector<Pixel> seen;
     bool throw_at_last = false;
+    bool unknown_at_last = false;
 
 private:
     ReferenceTracerInfo info_{
@@ -136,6 +144,15 @@ int main() {
           !interrupted);
     check("structural failure exposes no partial frame",
           !interrupted.frame.has_value());
+
+    RecordingTracer unknown;
+    unknown.unknown_at_last = true;
+    const ReferenceRenderResult unknown_result =
+        render_reference_frame(scene, unknown);
+    check("unknown classification rejects the frame",
+          !unknown_result);
+    check("unknown classification exposes no partial frame",
+          !unknown_result.frame.has_value());
 
     std::cout << "\n=== Results: " << passed << " passed, "
               << failed << " failed ===\n";

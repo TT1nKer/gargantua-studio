@@ -1,8 +1,10 @@
 #include "reference_serialization.h"
 
+#include "reference_frame_summary.h"
 #include "reference_manifest.h"
 
 #include <array>
+#include <cmath>
 #include <iomanip>
 #include <locale>
 #include <sstream>
@@ -69,24 +71,39 @@ bool frame_shape_is_consistent(const ReferenceFrame& frame) {
     if (!validation) {
         return false;
     }
+    if (frame.tracer.solar_version.empty() ||
+        frame.tracer.physics_contract.empty() ||
+        !std::isfinite(frame.tracer.capture_radius_M)) {
+        return false;
+    }
+    const double horizon_radius =
+        frame.scene.mass_M *
+        (1.0 + std::sqrt(
+            1.0 -
+            frame.scene.spin_chi * frame.scene.spin_chi));
+    if (frame.tracer.capture_radius_M <= horizon_radius ||
+        frame.tracer.capture_radius_M >=
+            frame.scene.observer_radius_M) {
+        return false;
+    }
     const std::size_t pixel_count =
         frame.scene.width * frame.scene.height;
-    const ReferenceFrameSummary& summary = frame.summary;
-    const std::size_t classified =
-        summary.captured +
-        summary.escaped +
-        summary.unconverged +
-        summary.constraint_violations +
-        summary.initialization_errors;
-    const std::size_t failed =
-        summary.unconverged +
-        summary.constraint_violations +
-        summary.initialization_errors;
-    return frame.rays.size() == pixel_count &&
-           classified == pixel_count &&
-           summary.failed == failed &&
-           ((failed == 0) ==
-            (frame.status == FrameStatus::Complete));
+    if (frame.rays.size() != pixel_count) {
+        return false;
+    }
+
+    ReferenceFrameSummary derived_summary;
+    if (!summarize_reference_rays(
+            frame.rays, derived_summary) ||
+        !reference_frame_summaries_equal(
+            frame.summary, derived_summary)) {
+        return false;
+    }
+    const FrameStatus expected_status =
+        derived_summary.failed == 0
+            ? FrameStatus::Complete
+            : FrameStatus::DiagnosticFailed;
+    return frame.status == expected_status;
 }
 
 std::string canonical_scene(const ReferenceScene& scene) {
