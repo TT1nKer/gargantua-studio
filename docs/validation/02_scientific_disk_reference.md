@@ -31,7 +31,7 @@ film-look model.
 - Solar version/contract: `0.2.0-alpha.1` /
   `relativity-v3-phase2`
 - Gargantua source commit:
-  `7496f0ea88cbd964656eb6073ebf3fc75cc877c1`
+  `9425c0428169a4a44a292698a8c17f839938ea19`
 - Exact machine-readable values:
   [`tests/fixtures/scientific_reference_v2.json`](../../tests/fixtures/scientific_reference_v2.json)
 - Previous classification-only baseline:
@@ -51,16 +51,16 @@ The perspective camera maps `tan(alpha)` onto the image plane.
 The accepted build fetched the locked Solar commit from its public repository:
 
 ```sh
-cmake -S . -B build-solar-635d99 -DCMAKE_BUILD_TYPE=Release
-cmake --build build-solar-635d99 --parallel 4
-ctest --test-dir build-solar-635d99 --output-on-failure
+cmake -S . -B build-release-final -DCMAKE_BUILD_TYPE=Release
+cmake --build build-release-final --parallel 4
+ctest --test-dir build-release-final --output-on-failure
 ```
 
 Two clean generations used identical options and distinct output directories:
 
 ```sh
-./build-solar-635d99/gargantua-render-reference \
-  --output artifacts/scientific-reference-v2-solar-635d99 \
+./build-release-final/gargantua-render-reference \
+  --output artifacts/scientific-reference-v2-horizon-metadata \
   --mass-M 1 --spin 0.5 --observer-r-M 30 \
   --inclination-deg 85 --fov-y-deg 40 \
   --width 64 --height 36 --escape-r-M 60 \
@@ -75,17 +75,19 @@ Two clean generations used identical options and distinct output directories:
 ```
 
 The repeat changed only `--output` to
-`artifacts/scientific-reference-v2-solar-635d99-repeat`. `cmp` checked all
-four files. A read-only AWK pass independently checked population accounting,
-negative final affine values, invariant gates, and disk evidence. A separate
-Ruby pass recomputed FNV-1a from raw file bytes rather than trusting the
-manifest.
+`artifacts/scientific-reference-v2-horizon-metadata-repeat`. `cmp` checked
+all four files. The refreshed manifest records Solar's computed outer-horizon
+radius; the beauty, classification, and CSV files remained byte-identical to
+the pre-refactor accepted generation. A read-only AWK pass independently
+checked population accounting, negative final affine values, invariant gates,
+and disk evidence. A separate Ruby pass recomputed FNV-1a from raw file bytes
+rather than trusting the manifest.
 
 The Schwarzschild check used:
 
 ```sh
-./build-solar-635d99/gargantua-render-reference \
-  --output artifacts/scientific-schwarzschild-boundary-v2-solar-635d99 \
+./build-release-final/gargantua-render-reference \
+  --output artifacts/scientific-schwarzschild-boundary-v2-horizon-metadata \
   --mass-M 1 --spin 0 --observer-r-M 30 \
   --inclination-deg 90 --fov-y-deg 40 \
   --width 64 --height 64 --escape-r-M 60 \
@@ -102,6 +104,21 @@ contract while leaving capture/escape as the boundary classification.
 
 Environment: macOS `14.8.7`, arm64, AppleClang
 `16.0.0 (clang-1600.0.26.6)`, Release.
+
+The final warning-enabled Release build completed without a new compiler
+warning, and CTest passed `10/10` in `16.77 s`. A Debug build with combined
+ASan/UBSan and frame pointers passed all `10/10` tests without a sanitizer
+diagnostic: the six physics/render/output tests passed in `624.31 s`
+(`solar_kerr_path` used `621.68 s`), and the remaining probe, parser, CLI, and
+metadata tests passed in `170.94 s`.
+
+The dependency audit found no positive-Mino production path, no GR or transfer
+formula outside the Solar adapter, no display mutation of raw evidence, no
+failed classification accepted as success, and no CLI dependency below the
+public reference layer. `solar_kerr_ray_tracer.cpp` is `95` lines. The larger
+manifest, serialization, option-parser, and path files each retain one
+cohesive responsibility; no CUDA, WebGL, OpenEXR, or UI implementation is
+present.
 
 ## Inputs
 
@@ -166,7 +183,7 @@ Independent file evidence:
 | `beauty.ppm` | 6925 | `69366ae1b7ee86b0` | `fc742cf970fb58d53d1f2c93b5adad814819a87e6724cba96bf9330850ba15f9` |
 | `classification.ppm` | 6925 | `2c632e9865f0e440` | `b1de3bc7b01494b9f8439ef2f71dd23b0269291642e28f4b8c6d847adf6adb4f` |
 | `rays.csv` | 492203 | `2d51d7077551d6ee` | `586879ef3c64f86cbccf65ad83ba5fdf3473a94d5207949a915c47be77b8c84c` |
-| `manifest.json` | — | — | `9cf1908e4cd2a954e3929d5703bbf50577069d292f07ddb36b33308889ed8f34` |
+| `manifest.json` | — | — | `9506760c866e6d299519a25df599ef257bd985f967b174679ddb0ed1c0906671` |
 
 The classification palette contained exactly `120` black capture pixels,
 `897` cyan disk pixels, and `1287` gray escape pixels. No failure color was
@@ -204,6 +221,13 @@ contract. The regression reduced the event Hamiltonian error from
 to `3.0314e-16`; the accepted boundary then had zero failures. The primary
 classification and beauty checksums remained unchanged, while the evidence
 CSV changed as expected.
+
+The final repository-boundary audit also found Kerr's outer-horizon formula
+duplicated in Gargantua's generic scene and output validation. Commit
+`9425c04...` removed both copies: Solar now computes the horizon once, the
+adapter owns Kerr-domain checks, and serialized tracer provenance carries
+`outer_horizon_radius_M = 1.8660254037844386`. Repeated image and CSV bytes
+were unchanged.
 
 ## Result
 

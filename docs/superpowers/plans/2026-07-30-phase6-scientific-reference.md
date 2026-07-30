@@ -841,7 +841,8 @@ Add successful parsing for all disk values and each opacity. Add failures for:
 - zero crossing count;
 - negative/infinite semi-transparent depth;
 - non-positive exposure;
-- disk outer radius inside the horizon.
+- syntactically valid disk radii are deferred to the Solar adapter, which
+  rejects Kerr-domain violations before rendering.
 
 Example alias conflict:
 
@@ -868,7 +869,9 @@ Expected: new option assertions fail.
 Canonical `--initial-mino-step` and `--max-mino-step` map to the existing
 positive magnitude scene fields. Legacy `--initial-step-M` and
 `--max-step-M` map identically but conflict with their canonical counterpart.
-All validation remains centralized in `validate_reference_scene`.
+Framework-light validation remains in `validate_reference_scene`; Kerr-domain
+validation remains in the Solar adapter so Gargantua does not copy GR
+formulae.
 
 - [x] **Step 4: Update help and CLI JSON**
 
@@ -1039,7 +1042,7 @@ git commit -m "docs: validate scientific disk reference"
 **Interfaces:**
 - Produces: a reviewable public branch and PR with local and Linux evidence.
 
-- [ ] **Step 1: Add the repository Linux gate**
+- [x] **Step 1: Add the repository Linux gate**
 
 Create `.github/workflows/ci.yml`:
 
@@ -1088,7 +1091,7 @@ git add .github/workflows/ci.yml
 git commit -m "ci: verify scientific reference renderer"
 ```
 
-- [ ] **Step 2: Clean Release verification**
+- [x] **Step 2: Clean Release verification**
 
 Run:
 
@@ -1102,7 +1105,7 @@ git diff --check
 
 Expected: all Gargantua tests pass and no new compiler warning appears.
 
-- [ ] **Step 3: Combined sanitizer verification**
+- [x] **Step 3: Combined sanitizer verification**
 
 Configure:
 
@@ -1119,7 +1122,7 @@ ctest --test-dir build-sanitize -R \
 
 Expected: every focused test passes without ASan/UBSan diagnostics.
 
-- [ ] **Step 4: Requirements and architecture audit**
+- [x] **Step 4: Requirements and architecture audit**
 
 Check:
 

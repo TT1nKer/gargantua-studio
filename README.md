@@ -12,7 +12,7 @@ simulation or a cinema-quality renderer.
 ## Repository boundary
 
 - **Solar** owns metrics, observers, geodesics, event states, fluid models,
-  and radiative-transfer primitives.
+  horizon/domain calculations, and radiative-transfer primitives.
 - **Gargantua Studio** owns cameras, render flows, artifact schemas,
   diagnostics, and eventually the offline film pipeline.
 
@@ -67,7 +67,8 @@ The command atomically finalizes four files:
 - `rays.csv`: one raw evidence row per pixel, including path extrema,
   winding, invariants, disk crossings, redshift, temperature, and intensity;
 - `manifest.json`: scene, dependency provenance, model boundary, numerical
-  gates, counts, maxima, byte sizes, and FNV-1a checksums.
+  gates, Solar-computed horizon/capture metadata, counts, maxima, byte sizes,
+  and FNV-1a checksums.
 
 Any failed ray makes the frame `diagnostic_failed` and the command exits `4`.
 Output is never silently overwritten, and incomplete generations use a
@@ -96,6 +97,10 @@ zero failures, byte-identical repeated outputs, and strict Hamiltonian,
 stationary-invariant, and Carter gates. A separate `64 x 64` Schwarzschild
 screen test brackets the analytic finite-distance shadow radius within one
 pixel.
+
+The accepted local build is macOS arm64 with AppleClang 16 in Release mode.
+The repository CI gate independently configures, builds, tests, and renders a
+small reference on `ubuntu-latest`.
 
 ## Explicitly missing
 

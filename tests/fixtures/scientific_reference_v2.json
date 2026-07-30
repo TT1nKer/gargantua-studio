@@ -3,7 +3,7 @@
   "status": "accepted",
   "gargantua": {
     "version": "0.1.0",
-    "commit": "7496f0ea88cbd964656eb6073ebf3fc75cc877c1"
+    "commit": "9425c0428169a4a44a292698a8c17f839938ea19"
   },
   "solar": {
     "version": "0.2.0-alpha.1",
@@ -78,7 +78,7 @@
       "sha256": "586879ef3c64f86cbccf65ad83ba5fdf3473a94d5207949a915c47be77b8c84c"
     },
     "manifest.json": {
-      "sha256": "9cf1908e4cd2a954e3929d5703bbf50577069d292f07ddb36b33308889ed8f34"
+      "sha256": "9506760c866e6d299519a25df599ef257bd985f967b174679ddb0ed1c0906671"
     }
   },
   "schwarzschild_boundary": {
