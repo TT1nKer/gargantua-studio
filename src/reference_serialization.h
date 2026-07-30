@@ -11,10 +11,12 @@ namespace gargantua::reference::detail {
 struct SerializedReferenceGeneration {
     bool valid = false;
     std::string message;
-    std::vector<unsigned char> ppm;
+    std::vector<unsigned char> beauty_ppm;
+    std::vector<unsigned char> classification_ppm;
     std::string csv;
     std::string manifest;
-    std::uint64_t ppm_checksum = 0;
+    std::uint64_t beauty_ppm_checksum = 0;
+    std::uint64_t classification_ppm_checksum = 0;
     std::uint64_t csv_checksum = 0;
 };
 

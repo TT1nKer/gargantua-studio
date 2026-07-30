@@ -27,25 +27,27 @@ output="$test_root/reference-frame"
     --mass-M 1 \
     --spin 0 \
     --observer-r-M 30 \
-    --inclination-deg 90 \
+    --inclination-deg 85 \
     --fov-y-deg 40 \
     --width 10 \
-    --height 9 \
+    --height 8 \
     --escape-r-M 60 \
     --max-affine-M 200 \
     --initial-step-M 0.02 \
     --max-step-M 0.25
 
+test -f "$output/beauty.ppm"
 test -f "$output/classification.ppm"
 test -f "$output/rays.csv"
 test -f "$output/manifest.json"
 grep -Eq '"captured":[1-9][0-9]*' "$output/manifest.json"
 grep -Eq '"escaped":[1-9][0-9]*' "$output/manifest.json"
+grep -Eq '"disk_surface_hits":[1-9][0-9]*' "$output/manifest.json"
 grep -q '"failed":0' "$output/manifest.json"
 
 ray_rows=$(awk 'END { print NR - 1 }' "$output/rays.csv")
-if [ "$ray_rows" -ne 90 ]; then
-    echo "rays.csv contains $ray_rows rays instead of 90" >&2
+if [ "$ray_rows" -ne 80 ]; then
+    echo "rays.csv contains $ray_rows rays instead of 80" >&2
     exit 1
 fi
 

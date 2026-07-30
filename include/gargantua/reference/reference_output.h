@@ -11,7 +11,8 @@ namespace gargantua::reference {
 struct ReferenceOutputResult {
     bool written;
     std::string message;
-    std::uint64_t ppm_checksum;
+    std::uint64_t beauty_ppm_checksum;
+    std::uint64_t classification_ppm_checksum;
     std::uint64_t csv_checksum;
 
     explicit operator bool() const noexcept {

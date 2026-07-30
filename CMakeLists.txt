@@ -38,6 +38,7 @@ add_library(
     gargantua_reference
     src/perspective_camera.cpp
     src/reference_frame.cpp
+    src/reference_image_encoding.cpp
     src/reference_manifest.cpp
     src/reference_output.cpp
     src/reference_ray.cpp

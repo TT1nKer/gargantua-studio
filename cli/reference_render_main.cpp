@@ -65,9 +65,12 @@ int main(int argc, char** argv) {
             << "\",\"captured\":" << summary.captured
             << ",\"escaped\":" << summary.escaped
             << ",\"failed\":" << summary.failed
-            << ",\"ppm_checksum_fnv1a64\":\""
+            << ",\"beauty_ppm_checksum_fnv1a64\":\""
             << std::hex << std::setw(16) << std::setfill('0')
-            << output.ppm_checksum
+            << output.beauty_ppm_checksum
+            << "\",\"classification_ppm_checksum_fnv1a64\":\""
+            << std::hex << std::setw(16) << std::setfill('0')
+            << output.classification_ppm_checksum
             << "\",\"csv_checksum_fnv1a64\":\""
             << std::setw(16) << output.csv_checksum
             << "\"}\n";

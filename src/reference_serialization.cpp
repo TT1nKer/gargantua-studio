@@ -1,9 +1,9 @@
 #include "reference_serialization.h"
 
 #include "reference_frame_summary.h"
+#include "reference_image_encoding.h"
 #include "reference_manifest.h"
 
-#include <array>
 #include <cmath>
 #include <iomanip>
 #include <locale>
@@ -31,27 +31,6 @@ std::uint64_t fnv1a64(const std::string& value) noexcept {
     return fnv1a64(
         reinterpret_cast<const unsigned char*>(value.data()),
         value.size());
-}
-
-std::array<unsigned char, 3> classification_color(
-    RayClassification classification) noexcept {
-    switch (classification) {
-    case RayClassification::CapturedAtBlCutoff:
-        return {{0, 0, 0}};
-    case RayClassification::Escaped:
-        return {{235, 235, 235}};
-    case RayClassification::DiskSurfaceHit:
-        return {{0, 200, 255}};
-    case RayClassification::Unconverged:
-        return {{255, 0, 255}};
-    case RayClassification::ConstraintViolation:
-        return {{255, 64, 0}};
-    case RayClassification::InitializationError:
-        return {{255, 255, 0}};
-    case RayClassification::TransferFailure:
-        return {{255, 0, 0}};
-    }
-    return {{255, 255, 0}};
 }
 
 std::string csv_field(const std::string& value) {
@@ -110,6 +89,13 @@ bool frame_shape_is_consistent(const ReferenceFrame& frame) {
     return frame.status == expected_status;
 }
 
+const char* opacity_name(
+    ReferenceDiskOpacity opacity) noexcept {
+    return opacity == ReferenceDiskOpacity::Opaque
+               ? "opaque"
+               : "semi-transparent";
+}
+
 std::string canonical_scene(const ReferenceScene& scene) {
     std::ostringstream output;
     output.imbue(std::locale::classic());
@@ -124,8 +110,65 @@ std::string canonical_scene(const ReferenceScene& scene) {
            << "escape_radius_M=" << scene.escape_radius_M << '\n'
            << "max_affine_M=" << scene.max_affine_M << '\n'
            << "initial_step_M=" << scene.initial_step_M << '\n'
-           << "max_step_M=" << scene.max_step_M << '\n';
+           << "max_step_M=" << scene.max_step_M << '\n'
+           << "disk.outer_radius_M="
+           << scene.disk.outer_radius_M << '\n'
+           << "disk.density_scale="
+           << scene.disk.density_scale << '\n'
+           << "disk.temperature_scale="
+           << scene.disk.temperature_scale << '\n'
+           << "disk.density_power="
+           << scene.disk.density_power << '\n'
+           << "disk.specific_intensity_scale="
+           << scene.disk.specific_intensity_scale << '\n'
+           << "disk.bolometric_intensity_scale="
+           << scene.disk.bolometric_intensity_scale << '\n'
+           << "disk.opacity="
+           << opacity_name(scene.disk.opacity) << '\n'
+           << "disk.surface_optical_depth="
+           << scene.disk.surface_optical_depth << '\n'
+           << "disk.max_crossings="
+           << scene.disk.max_crossings << '\n'
+           << "disk.display_exposure="
+           << scene.disk.display_exposure << '\n';
     return output.str();
+}
+
+std::string serialize_ray_csv(const ReferenceFrame& frame) {
+    std::ostringstream csv;
+    csv.imbue(std::locale::classic());
+    csv << std::setprecision(17)
+        << "pixel_x,pixel_y,classification,termination_reason,"
+        << "final_affine_M,final_radius_M,min_radius_M,winding,"
+        << "max_constraint_error,max_energy_rel_error,max_lz_rel_error,"
+        << "max_carter_rel_error,accepted_steps,rejected_steps,"
+        << "disk_radius_M,redshift_g,observed_temperature,"
+        << "observed_specific_intensity,observed_bolometric_intensity,"
+        << "disk_crossings\n";
+    for (std::size_t index = 0; index < frame.rays.size(); ++index) {
+        const ReferenceRayResult& ray = frame.rays[index];
+        csv << index % frame.scene.width << ','
+            << index / frame.scene.width << ','
+            << ray_classification_name(ray.classification) << ','
+            << csv_field(ray.termination_reason) << ','
+            << ray.final_affine_M << ','
+            << ray.final_radius_M << ','
+            << ray.min_radius_M << ','
+            << ray.winding << ','
+            << ray.max_constraint_error << ','
+            << ray.max_energy_rel_error << ','
+            << ray.max_lz_rel_error << ','
+            << ray.max_carter_rel_error << ','
+            << ray.accepted_steps << ','
+            << ray.rejected_steps << ','
+            << ray.disk_radius_M << ','
+            << ray.redshift_g << ','
+            << ray.observed_temperature << ','
+            << ray.observed_specific_intensity << ','
+            << ray.observed_bolometric_intensity << ','
+            << ray.disk_crossings << '\n';
+    }
+    return csv.str();
 }
 
 } // namespace
@@ -139,60 +182,35 @@ SerializedReferenceGeneration serialize_reference_generation(
         return failure;
     }
 
-    std::ostringstream ppm_header;
-    ppm_header << "P6\n" << frame.scene.width << ' '
-               << frame.scene.height << "\n255\n";
-    const std::string header = ppm_header.str();
-    std::vector<unsigned char> ppm(
-        header.begin(), header.end());
-    ppm.reserve(header.size() + 3 * frame.rays.size());
-    for (const ReferenceRayResult& ray : frame.rays) {
-        const auto color =
-            classification_color(ray.classification);
-        ppm.insert(ppm.end(), color.begin(), color.end());
-    }
-
-    std::ostringstream csv;
-    csv.imbue(std::locale::classic());
-    csv << std::setprecision(17)
-        << "pixel_x,pixel_y,classification,termination_reason,"
-        << "final_radius_M,max_constraint_error,"
-        << "max_energy_rel_error,max_lz_rel_error,"
-        << "max_carter_rel_error,accepted_steps,rejected_steps\n";
-    for (std::size_t index = 0; index < frame.rays.size(); ++index) {
-        const ReferenceRayResult& ray = frame.rays[index];
-        csv << index % frame.scene.width << ','
-            << index / frame.scene.width << ','
-            << ray_classification_name(ray.classification) << ','
-            << csv_field(ray.termination_reason) << ','
-            << ray.final_radius_M << ','
-            << ray.max_constraint_error << ','
-            << ray.max_energy_rel_error << ','
-            << ray.max_lz_rel_error << ','
-            << ray.max_carter_rel_error << ','
-            << ray.accepted_steps << ','
-            << ray.rejected_steps << '\n';
-    }
-
-    const std::string csv_text = csv.str();
-    const std::uint64_t ppm_checksum =
-        fnv1a64(ppm.data(), ppm.size());
-    const std::uint64_t csv_checksum = fnv1a64(csv_text);
+    EncodedReferenceImages images =
+        encode_reference_images(frame);
+    const std::string csv = serialize_ray_csv(frame);
+    const std::uint64_t beauty_checksum = fnv1a64(
+        images.beauty_ppm.data(), images.beauty_ppm.size());
+    const std::uint64_t classification_checksum = fnv1a64(
+        images.classification_ppm.data(),
+        images.classification_ppm.size());
+    const std::uint64_t csv_checksum = fnv1a64(csv);
     const std::uint64_t scene_hash =
         fnv1a64(canonical_scene(frame.scene));
+    std::string manifest = serialize_reference_manifest(
+        frame,
+        scene_hash,
+        beauty_checksum,
+        images.beauty_ppm.size(),
+        classification_checksum,
+        images.classification_ppm.size(),
+        csv_checksum,
+        csv.size());
     return SerializedReferenceGeneration{
         true,
         {},
-        std::move(ppm),
-        csv_text,
-        serialize_reference_manifest(
-            frame,
-            scene_hash,
-            ppm_checksum,
-            header.size() + 3 * frame.rays.size(),
-            csv_checksum,
-            csv_text.size()),
-        ppm_checksum,
+        std::move(images.beauty_ppm),
+        std::move(images.classification_ppm),
+        csv,
+        std::move(manifest),
+        beauty_checksum,
+        classification_checksum,
         csv_checksum,
     };
 }

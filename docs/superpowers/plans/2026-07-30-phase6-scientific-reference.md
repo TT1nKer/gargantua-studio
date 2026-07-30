@@ -692,7 +692,7 @@ struct SerializedReferenceGeneration {
 };
 ```
 
-- [ ] **Step 1: Add output tests for v2 artifacts**
+- [x] **Step 1: Add output tests for v2 artifacts**
 
 Require:
 
@@ -715,7 +715,7 @@ double linear_to_srgb(double value) {
 }
 ```
 
-- [ ] **Step 2: Run the output test red**
+- [x] **Step 2: Run the output test red**
 
 ```sh
 cmake --build build-phase5 --target test-reference-output --parallel 4
@@ -724,7 +724,7 @@ cmake --build build-phase5 --target test-reference-output --parallel 4
 
 Expected: assertions fail because `beauty.ppm` and v2 fields are absent.
 
-- [ ] **Step 3: Implement separate image encoders**
+- [x] **Step 3: Implement separate image encoders**
 
 Keep classification colors unchanged and add:
 
@@ -740,7 +740,7 @@ same channel for RGB. Successful no-emission rays are black; failed rays use
 their classification color. The fixed classification palette adds cyan
 `(0,200,255)` for disk hits and red `(255,0,0)` for transfer failures.
 
-- [ ] **Step 4: Expand canonical CSV and scene hash**
+- [x] **Step 4: Expand canonical CSV and scene hash**
 
 Append exact columns:
 
@@ -753,7 +753,7 @@ observed_bolometric_intensity,disk_crossings
 Add every disk/display scene value to the canonical scene string so a physics
 or display change changes the scene hash.
 
-- [ ] **Step 5: Advance the manifest to v2**
+- [x] **Step 5: Advance the manifest to v2**
 
 Record:
 
@@ -766,7 +766,7 @@ Record:
 - all three file byte counts/checksums;
 - remaining limitations only.
 
-- [ ] **Step 6: Make output cleanup reliable**
+- [x] **Step 6: Make output cleanup reliable**
 
 Use a scoped partial-generation guard:
 
@@ -795,7 +795,7 @@ Mid-write filesystem failures are guarded by the scoped cleanup but are not
 fault-injected in this slice; the validation report must retain this as an
 unverified recovery branch.
 
-- [ ] **Step 7: Run output and renderer tests**
+- [x] **Step 7: Run output and renderer tests**
 
 ```sh
 cmake --build build-phase5 --target test-reference-output \
@@ -806,7 +806,7 @@ cmake --build build-phase5 --target test-reference-output \
 
 Expected: all assertions pass.
 
-- [ ] **Step 8: Commit artifact schema v2**
+- [x] **Step 8: Commit artifact schema v2**
 
 ```sh
 git add include/gargantua/reference/reference_output.h \
@@ -884,8 +884,8 @@ and CSV checksum.
 
 - [ ] **Step 5: Extend the shell integration**
 
-The fixed `10 x 9` scene must write four files, contain nonzero capture,
-escape, and disk populations, contain zero failures, and expose 90 CSV rows.
+The fixed `10 x 8` scene must write four files, contain nonzero capture,
+escape, and disk populations, contain zero failures, and expose 80 CSV rows.
 Retain duplicate-output exit code 5 and diagnostic-frame exit code 4.
 
 - [ ] **Step 6: Run CLI tests**
