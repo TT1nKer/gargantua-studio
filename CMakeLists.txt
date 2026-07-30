@@ -10,7 +10,9 @@ option(GARGANTUA_BUILD_TESTS "Build Gargantua tests" ON)
 add_library(
     gargantua_reference
     src/perspective_camera.cpp
+    src/reference_frame.cpp
     src/reference_ray.cpp
+    src/reference_renderer.cpp
     src/reference_scene.cpp
     src/solar_kerr_ray_tracer.cpp)
 target_compile_features(gargantua_reference PUBLIC cxx_std_17)
@@ -55,4 +57,17 @@ if(GARGANTUA_BUILD_TESTS)
     add_test(
         NAME gargantua.solar_kerr_ray_tracer
         COMMAND test-solar-kerr-ray-tracer)
+
+    add_executable(
+        test-reference-renderer
+        tests/test_reference_renderer.cpp)
+    target_compile_features(
+        test-reference-renderer
+        PRIVATE cxx_std_17)
+    target_link_libraries(
+        test-reference-renderer
+        PRIVATE gargantua_reference)
+    add_test(
+        NAME gargantua.reference_renderer
+        COMMAND test-reference-renderer)
 endif()
