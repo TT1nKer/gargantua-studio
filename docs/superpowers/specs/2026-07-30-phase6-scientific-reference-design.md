@@ -51,7 +51,7 @@ Tests must fail if the direction or integration sign is reverted.
 ### Included
 
 - Lock Gargantua to Solar merge commit
-  `5459a53dfc7b76aa4e391c535a4488a441ba1c5c`.
+  `635d99f47fa50be892416986f2723d035ee2acc1`.
 - Compile and execute Solar Phase 5 thin-disk public APIs from Gargantua.
 - Migrate the reference raster from the generic Hamiltonian solver to Solar's
   separated Kerr solver.

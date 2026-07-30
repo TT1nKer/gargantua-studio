@@ -6,7 +6,7 @@
 
 **Architecture:** Gargantua keeps its existing `ReferenceRayTracer` boundary, but splits the Solar adapter into construction, separated-path orchestration, and evidence validation. Solar owns every metric/geodesic/redshift/disk calculation; Gargantua owns scene validation, event continuation policy, frame traversal, display encoding, and atomic artifacts.
 
-**Tech Stack:** C++17, CMake 3.20+, Solar `Solar::Relativity` at locked merge commit `5459a53dfc7b76aa4e391c535a4488a441ba1c5c`, PPM/CSV/JSON zero-runtime-dependency artifacts, CTest, AppleClang/GCC, ASan/UBSan.
+**Tech Stack:** C++17, CMake 3.20+, Solar `Solar::Relativity` at locked merge commit `635d99f47fa50be892416986f2723d035ee2acc1`, PPM/CSV/JSON zero-runtime-dependency artifacts, CTest, AppleClang/GCC, ASan/UBSan.
 
 ## Global Constraints
 
@@ -117,7 +117,7 @@ not contain one or more new public headers.
 Set:
 
 ```cmake
-set(GARGANTUA_SOLAR_COMMIT "5459a53dfc7b76aa4e391c535a4488a441ba1c5c")
+set(GARGANTUA_SOLAR_COMMIT "635d99f47fa50be892416986f2723d035ee2acc1")
 set(GARGANTUA_SOLAR_VERSION "0.2.0-alpha.1")
 set(GARGANTUA_SOLAR_PHYSICS_CONTRACT "relativity-v3-phase2")
 ```

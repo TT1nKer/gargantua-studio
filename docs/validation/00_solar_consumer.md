@@ -22,7 +22,7 @@ torus is kinematic; neither is GRMHD.
 
 ## Solar dependency
 
-- Git commit: `5459a53dfc7b76aa4e391c535a4488a441ba1c5c`
+- Git commit: `635d99f47fa50be892416986f2723d035ee2acc1`
 - Package version: `0.2.0-alpha.1`
 - Physics contract: `relativity-v3-phase2`
 - Public target: `Solar::Relativity`
