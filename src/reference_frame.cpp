@@ -1,7 +1,7 @@
 #include "gargantua/reference/reference_frame.h"
 
-#include "gargantua/reference/reference_numerics.h"
 #include "reference_frame_summary.h"
+#include "reference_ray_evidence.h"
 
 #include <algorithm>
 #include <cmath>
@@ -29,38 +29,6 @@ void retain_maximum(double value, double& maximum) {
     }
 }
 
-bool successful_ray_evidence_is_valid(
-    const ReferenceRayResult& ray) {
-    const bool reason_matches =
-        (ray.classification ==
-             RayClassification::CapturedAtBlCutoff &&
-         ray.termination_reason == "interior_cutoff") ||
-        (ray.classification == RayClassification::Escaped &&
-         ray.termination_reason == "escaped") ||
-        (ray.classification ==
-             RayClassification::DiskSurfaceHit &&
-         ray.termination_reason == "disk_surface_hit");
-    return reason_matches &&
-           std::isfinite(ray.final_radius_M) &&
-           ray.final_radius_M > 0.0 &&
-           std::isfinite(ray.max_constraint_error) &&
-           ray.max_constraint_error >= 0.0 &&
-           ray.max_constraint_error <
-               reference_hamiltonian_error_gate &&
-           std::isfinite(ray.max_energy_rel_error) &&
-           ray.max_energy_rel_error >= 0.0 &&
-           ray.max_energy_rel_error <
-               reference_stationary_invariant_error_gate &&
-           std::isfinite(ray.max_lz_rel_error) &&
-           ray.max_lz_rel_error >= 0.0 &&
-           ray.max_lz_rel_error <
-               reference_stationary_invariant_error_gate &&
-           std::isfinite(ray.max_carter_rel_error) &&
-           ray.max_carter_rel_error >= 0.0 &&
-           ray.max_carter_rel_error <
-               reference_carter_relative_error_gate;
-}
-
 } // namespace
 
 bool summarize_reference_rays(
@@ -68,27 +36,18 @@ bool summarize_reference_rays(
     ReferenceFrameSummary& summary) noexcept {
     summary = {};
     for (const ReferenceRayResult& ray : rays) {
-        if (ray.termination_reason.empty()) {
+        if (!valid_reference_ray_evidence(ray)) {
             return false;
         }
         switch (ray.classification) {
         case RayClassification::CapturedAtBlCutoff:
             ++summary.captured;
-            if (!successful_ray_evidence_is_valid(ray)) {
-                return false;
-            }
             break;
         case RayClassification::Escaped:
             ++summary.escaped;
-            if (!successful_ray_evidence_is_valid(ray)) {
-                return false;
-            }
             break;
         case RayClassification::DiskSurfaceHit:
             ++summary.disk_surface_hits;
-            if (!successful_ray_evidence_is_valid(ray)) {
-                return false;
-            }
             break;
         case RayClassification::Unconverged:
             ++summary.unconverged;

@@ -1,6 +1,7 @@
 #include "gargantua/reference/reference_ray_tracer.h"
 
 #include "gargantua/reference/reference_numerics.h"
+#include "reference_ray_evidence.h"
 #include "solar/relativity/geodesic_integrator.h"
 #include "solar/relativity/kerr_bl_metric.h"
 #include "solar/relativity/kerr_constants.h"
@@ -11,7 +12,6 @@
 #include <cmath>
 #include <limits>
 #include <stdexcept>
-#include <utility>
 #include <vector>
 
 namespace gargantua::reference {
@@ -60,33 +60,6 @@ const char* termination_reason_name(
         return "user_event";
     }
     return "unknown";
-}
-
-ReferenceRayResult unavailable_result(
-    RayClassification classification,
-    std::string reason) {
-    const double unavailable =
-        std::numeric_limits<double>::quiet_NaN();
-    return ReferenceRayResult{
-        classification,
-        std::move(reason),
-        unavailable,
-        unavailable,
-        unavailable,
-        unavailable,
-        unavailable,
-        unavailable,
-        unavailable,
-        unavailable,
-        0,
-        0,
-        unavailable,
-        unavailable,
-        unavailable,
-        unavailable,
-        unavailable,
-        0,
-    };
 }
 
 ObserverFrame make_render_observer(
@@ -166,7 +139,7 @@ public:
                   ray.local_direction[1],
                   ray.local_direction[2]}});
         if (!initial) {
-            return unavailable_result(
+            return detail::unavailable_reference_ray(
                 RayClassification::InitializationError,
                 "initialization_error");
         }
@@ -175,7 +148,7 @@ public:
             return classify(integrator_.integrate(
                 *initial.state, config_, events_));
         } catch (const std::exception&) {
-            return unavailable_result(
+            return detail::unavailable_reference_ray(
                 RayClassification::Unconverged,
                 "integration_exception");
         }

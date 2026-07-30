@@ -361,7 +361,7 @@ bool valid_reference_ray_evidence(
 } // namespace gargantua::reference::detail
 ```
 
-- [ ] **Step 1: Write classification/evidence truth-table tests**
+- [x] **Step 1: Write classification/evidence truth-table tests**
 
 Create fixtures for:
 
@@ -385,7 +385,7 @@ check("no-hit ray cannot carry disk intensity",
       !valid_reference_ray_evidence(invalid));
 ```
 
-- [ ] **Step 2: Register and run the test red**
+- [x] **Step 2: Register and run the test red**
 
 Add `test-reference-ray-evidence` to CMake, give only that test target a
 private `${CMAKE_CURRENT_SOURCE_DIR}/src` include directory, and run:
@@ -397,7 +397,7 @@ cmake --build build-phase5 --target test-reference-ray-evidence --parallel 4
 Expected: link or compile failure because the validation functions do not
 exist.
 
-- [ ] **Step 3: Implement evidence construction and validation**
+- [x] **Step 3: Implement evidence construction and validation**
 
 Validation rules:
 
@@ -421,13 +421,13 @@ radius, non-negative finite temperature/intensities, and
 disk-only coordinates. Failure classifications may carry unavailable values
 but cannot carry negative finite intensities.
 
-- [ ] **Step 4: Make renderer and summary use the validator**
+- [x] **Step 4: Make renderer and summary use the validator**
 
 `render_reference_frame` validates every returned ray before retaining it.
 `summarize_reference_rays` must reject unknown enums and contradictory
 evidence, then aggregate every new classification and maximum.
 
-- [ ] **Step 5: Run focused tests**
+- [x] **Step 5: Run focused tests**
 
 ```sh
 cmake --build build-phase5 --target test-reference-ray-evidence \
@@ -438,7 +438,7 @@ cmake --build build-phase5 --target test-reference-ray-evidence \
 
 Expected: all assertions pass.
 
-- [ ] **Step 6: Commit the evidence boundary**
+- [x] **Step 6: Commit the evidence boundary**
 
 ```sh
 git add CMakeLists.txt src/reference_ray_evidence.h \

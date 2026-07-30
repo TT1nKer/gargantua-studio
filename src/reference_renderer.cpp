@@ -2,6 +2,7 @@
 
 #include "gargantua/reference/perspective_camera.h"
 #include "reference_frame_summary.h"
+#include "reference_ray_evidence.h"
 
 #include <exception>
 #include <utility>
@@ -33,6 +34,11 @@ ReferenceRenderResult render_reference_frame(
             for (std::size_t x = 0; x < scene.width; ++x) {
                 ReferenceRayResult ray = tracer.trace(
                     perspective_camera_ray(scene, x, y));
+                if (!detail::valid_reference_ray_evidence(ray)) {
+                    return ReferenceRenderResult{
+                        std::nullopt,
+                        "reference tracer produced invalid ray evidence"};
+                }
                 frame.rays.push_back(std::move(ray));
             }
         }

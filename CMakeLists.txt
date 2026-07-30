@@ -41,6 +41,7 @@ add_library(
     src/reference_manifest.cpp
     src/reference_output.cpp
     src/reference_ray.cpp
+    src/reference_ray_evidence.cpp
     src/reference_renderer.cpp
     src/reference_scene.cpp
     src/reference_serialization.cpp
@@ -136,6 +137,23 @@ if(GARGANTUA_BUILD_TESTS)
     add_test(
         NAME gargantua.reference_renderer
         COMMAND test-reference-renderer)
+
+    add_executable(
+        test-reference-ray-evidence
+        tests/test_reference_ray_evidence.cpp)
+    target_compile_features(
+        test-reference-ray-evidence
+        PRIVATE cxx_std_17)
+    target_include_directories(
+        test-reference-ray-evidence
+        PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
+    target_link_libraries(
+        test-reference-ray-evidence
+        PRIVATE gargantua_reference)
+    gargantua_enable_warnings(test-reference-ray-evidence)
+    add_test(
+        NAME gargantua.reference_ray_evidence
+        COMMAND test-reference-ray-evidence)
 
     add_executable(
         test-reference-output
