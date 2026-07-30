@@ -7,9 +7,19 @@
 #include <iostream>
 #include <string_view>
 
+#ifndef GARGANTUA_REQUIRED_SOLAR_VERSION
+#error "Gargantua requires the locked Solar version at compile time"
+#endif
+
+#ifndef GARGANTUA_REQUIRED_SOLAR_CONTRACT
+#error "Gargantua requires the locked Solar physics contract at compile time"
+#endif
+
 int main() {
-    constexpr std::string_view required_version{"0.2.0-alpha.1"};
-    constexpr std::string_view required_contract{"relativity-v3-phase2"};
+    constexpr std::string_view required_version{
+        GARGANTUA_REQUIRED_SOLAR_VERSION};
+    constexpr std::string_view required_contract{
+        GARGANTUA_REQUIRED_SOLAR_CONTRACT};
     constexpr double half_pi = 1.5707963267948966;
     constexpr std::size_t samples_per_branch = 65;
     constexpr double expected_left_edge = -4.096266658713869;

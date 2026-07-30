@@ -14,12 +14,20 @@ if(GARGANTUA_SOLAR_SOURCE_DIR)
         RESULT_VARIABLE solar_git_result
         OUTPUT_VARIABLE solar_git_commit
         OUTPUT_STRIP_TRAILING_WHITESPACE)
+    execute_process(
+        COMMAND git -C "${GARGANTUA_SOLAR_SOURCE_DIR}" status --porcelain
+        RESULT_VARIABLE solar_status_result
+        OUTPUT_VARIABLE solar_status
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
     if(
         NOT solar_git_result EQUAL 0 OR
-        NOT solar_git_commit STREQUAL GARGANTUA_SOLAR_COMMIT)
+        NOT solar_status_result EQUAL 0 OR
+        NOT solar_git_commit STREQUAL GARGANTUA_SOLAR_COMMIT OR
+        NOT solar_status STREQUAL "")
         message(
             FATAL_ERROR
-            "Local Solar checkout does not match cmake/solar-lock.cmake")
+            "Local Solar checkout is dirty or does not match "
+            "cmake/solar-lock.cmake")
     endif()
     add_subdirectory(
         "${GARGANTUA_SOLAR_SOURCE_DIR}"

@@ -9,7 +9,7 @@ cinema-quality output.
 
 ## Build against the locked local Solar checkout
 
-The Solar checkout must be at the exact commit recorded in
+The Solar checkout must be clean and at the exact commit recorded in
 `cmake/solar-lock.cmake`:
 
 ```sh

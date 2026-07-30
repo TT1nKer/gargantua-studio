@@ -7,13 +7,20 @@ execute_process(
     RESULT_VARIABLE solar_git_result
     OUTPUT_VARIABLE solar_git_commit
     OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(
+    COMMAND git -C "${SOLAR_SOURCE_DIR}" status --porcelain
+    RESULT_VARIABLE solar_status_result
+    OUTPUT_VARIABLE solar_status
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 string(LENGTH "${solar_git_commit}" solar_commit_length)
 if(
     NOT solar_git_result EQUAL 0 OR
+    NOT solar_status_result EQUAL 0 OR
     NOT solar_commit_length EQUAL 40 OR
-    NOT solar_git_commit MATCHES "^[0-9a-f]+$")
-    message(FATAL_ERROR "Solar source is not a valid Git commit")
+    NOT solar_git_commit MATCHES "^[0-9a-f]+$" OR
+    NOT solar_status STREQUAL "")
+    message(FATAL_ERROR "Solar source must be a clean, valid Git commit")
 endif()
 
 set(solar_version_header "${SOLAR_SOURCE_DIR}/include/solar/version.h")

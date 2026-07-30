@@ -78,6 +78,6 @@ not a new independent derivation of the underlying physics.
 ## Fastest falsification
 
 Run the commands above after changing Solar or the lock. Configuration must
-reject a local checkout whose `HEAD` differs from the lock; the probe must fail
-if the version, physics contract, sample count, or either edge exceeds the
-declared tolerance.
+reject a dirty local checkout or one whose `HEAD` differs from the lock; the
+probe must fail if the version, physics contract, sample count, or either edge
+exceeds the declared tolerance.
