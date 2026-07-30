@@ -77,7 +77,7 @@ Dependency direction remains `CLI/output L3 -> renderer/path L2 -> focused L1 ->
 - Consumes: `Solar::Relativity`, `AnalyticCircularDiskFluid`, `AnalyticOpticallyThinTorus`, `ThinDiskCrossingRecorder`, and `advance_backward_transfer`.
 - Produces: a CTest probe JSON object containing `transfer_intensity`, `disk_temperature`, `torus_density`, and `surface_crossings`.
 
-- [ ] **Step 1: Extend the consumer probe before changing the lock**
+- [x] **Step 1: Extend the consumer probe before changing the lock**
 
 Add the Phase 5 public headers and a compact execution path to
 `src/probe_main.cpp`:
@@ -101,7 +101,7 @@ Construct one valid disk sample, one torus sample, and one disk crossing using
 the same finite fixtures already accepted by Solar's installed consumer.
 Require every result to succeed before printing JSON.
 
-- [ ] **Step 2: Build to verify the old lock is red**
+- [x] **Step 2: Build to verify the old lock is red**
 
 Run:
 
@@ -112,7 +112,7 @@ cmake --build build --parallel 4
 Expected: compilation fails because the locked pre-Phase 5 Solar commit does
 not contain one or more new public headers.
 
-- [ ] **Step 3: Move the exact dependency lock**
+- [x] **Step 3: Move the exact dependency lock**
 
 Set:
 
@@ -126,7 +126,7 @@ Delete only the worktree-local `build` directory through CMake's clean
 reconfigure path or configure a fresh `build-phase5` directory. Do not alter a
 Solar checkout to make it match the lock.
 
-- [ ] **Step 4: Configure, build, and run the focused probe**
+- [x] **Step 4: Configure, build, and run the focused probe**
 
 Run:
 
@@ -140,14 +140,14 @@ ctest --test-dir build-phase5 -R gargantua.solar_probe --output-on-failure
 Expected: CTest passes and JSON contains finite Phase 5 fields with
 `surface_crossings:1`.
 
-- [ ] **Step 5: Record the consumer evidence**
+- [x] **Step 5: Record the consumer evidence**
 
 Update `docs/validation/00_solar_consumer.md` with the exact commit, compiler,
 commands, JSON, model boundary, and the fact that the unchanged
 `relativity-v3-phase2` contract string makes the Git commit mandatory
 provenance.
 
-- [ ] **Step 6: Commit the dependency gate**
+- [x] **Step 6: Commit the dependency gate**
 
 ```sh
 git add cmake/solar-lock.cmake src/probe_main.cpp \
