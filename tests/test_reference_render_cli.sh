@@ -21,31 +21,65 @@ if [ "$invalid_code" -ne 2 ]; then
     exit 1
 fi
 
+set +e
+"$renderer" \
+    --output "$test_root/inside-horizon" \
+    --mass-M 1 \
+    --spin 0 \
+    --disk-outer-r-M 1.5 >/dev/null 2>&1
+physics_code=$?
+set -e
+if [ "$physics_code" -ne 3 ]; then
+    echo "invalid Kerr domain returned $physics_code instead of 3" >&2
+    exit 1
+fi
+
 output="$test_root/reference-frame"
+render_result="$test_root/render-result.json"
 "$renderer" \
     --output "$output" \
     --mass-M 1 \
     --spin 0 \
     --observer-r-M 30 \
-    --inclination-deg 90 \
+    --inclination-deg 85 \
     --fov-y-deg 40 \
     --width 10 \
-    --height 9 \
+    --height 8 \
     --escape-r-M 60 \
     --max-affine-M 200 \
-    --initial-step-M 0.02 \
-    --max-step-M 0.25
+    --initial-mino-step 0.02 \
+    --max-mino-step 0.25 \
+    --disk-outer-r-M 20 \
+    --disk-temperature-scale 1 \
+    --disk-density-scale 1 \
+    --disk-density-power 0.75 \
+    --disk-specific-scale 1 \
+    --disk-bolometric-scale 1 \
+    --disk-opacity opaque \
+    --disk-surface-optical-depth 1 \
+    --disk-max-crossings 8 \
+    --exposure 1 >"$render_result"
 
+test -f "$output/beauty.ppm"
 test -f "$output/classification.ppm"
 test -f "$output/rays.csv"
 test -f "$output/manifest.json"
 grep -Eq '"captured":[1-9][0-9]*' "$output/manifest.json"
 grep -Eq '"escaped":[1-9][0-9]*' "$output/manifest.json"
+grep -Eq '"disk_surface_hits":[1-9][0-9]*' "$output/manifest.json"
 grep -q '"failed":0' "$output/manifest.json"
+grep -Eq '"disk_surface_hits":[1-9][0-9]*' "$render_result"
+grep -Eq '"disk_crossings":[1-9][0-9]*' "$render_result"
+grep -Eq '"beauty_ppm_checksum_fnv1a64":"[0-9a-f]{16}"' \
+    "$render_result"
+grep -Eq '"classification_ppm_checksum_fnv1a64":"[0-9a-f]{16}"' \
+    "$render_result"
+grep -Eq '"csv_checksum_fnv1a64":"[0-9a-f]{16}"' \
+    "$render_result"
 
 ray_rows=$(awk 'END { print NR - 1 }' "$output/rays.csv")
-if [ "$ray_rows" -ne 90 ]; then
-    echo "rays.csv contains $ray_rows rays instead of 90" >&2
+if [ "$ray_rows" -ne 80 ]; then
+    echo "rays.csv contains $ray_rows rays instead of 80" >&2
     exit 1
 fi
 

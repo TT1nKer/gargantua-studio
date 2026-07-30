@@ -1,0 +1,36 @@
+name: C++ CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build --parallel 2
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+      - name: Render small scientific reference
+        run: |
+          ./build/gargantua-render-reference \
+            --output /tmp/gargantua-ci-reference \
+            --mass-M 1 --spin 0 --observer-r-M 30 \
+            --inclination-deg 90 --fov-y-deg 40 \
+            --width 10 --height 8 --escape-r-M 60 \
+            --max-affine-M 200 \
+            --initial-mino-step 0.02 --max-mino-step 0.25 \
+            --disk-outer-r-M 20 --disk-opacity opaque
+          test -s /tmp/gargantua-ci-reference/beauty.ppm
+          grep -q '"failed":0' \
+            /tmp/gargantua-ci-reference/manifest.json

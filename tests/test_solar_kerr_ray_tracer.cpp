@@ -22,14 +22,14 @@ void check(const std::string& name, bool condition) {
 } // namespace
 
 int main() {
-    constexpr double half_pi =
-        1.570796326794896619231321691639751442;
+    constexpr double pi =
+        3.141592653589793238462643383279502884;
 
     ReferenceScene scene = reference_scene_defaults();
     scene.spin_chi = 0.0;
-    scene.inclination_radians = half_pi;
-    scene.width = 9;
-    scene.height = 9;
+    scene.inclination_radians = 85.0 * pi / 180.0;
+    scene.width = 64;
+    scene.height = 36;
 
     ReferenceTracerBuild built =
         make_solar_kerr_ray_tracer(scene);
@@ -39,8 +39,15 @@ int main() {
         return 1;
     }
     check(
+        "Solar reports the Schwarzschild horizon",
+        std::fabs(
+            built.tracer->info().outer_horizon_radius_M -
+            2.0) < 1.0e-14);
+    check(
         "capture cutoff remains outside Schwarzschild horizon",
-        built.tracer->info().capture_radius_M > 2.0009 &&
+        built.tracer->info().capture_radius_M >
+                built.tracer->info().outer_horizon_radius_M &&
+            built.tracer->info().capture_radius_M > 2.0009 &&
             built.tracer->info().capture_radius_M < 2.0011);
     check(
         "Solar package version retained",
@@ -51,7 +58,7 @@ int main() {
             "relativity-v3-phase2");
 
     const ReferenceRayResult center = built.tracer->trace(
-        perspective_camera_ray(scene, 4, 4));
+        perspective_camera_ray(scene, 28, 10));
     std::cout << "  center classification="
               << ray_classification_name(center.classification)
               << " reason=" << center.termination_reason
@@ -67,6 +74,9 @@ int main() {
         "captured ray retains interior-cutoff reason",
         center.termination_reason == "interior_cutoff");
     check(
+        "captured ray advances observer-to-past",
+        center.final_affine_M < 0.0);
+    check(
         "captured ray satisfies Hamiltonian gate",
         center.max_constraint_error < 1.0e-10);
     check(
@@ -80,8 +90,6 @@ int main() {
         center.max_carter_rel_error < 1.0e-9);
 
     ReferenceScene near_cutoff_scene = scene;
-    near_cutoff_scene.width = 64;
-    near_cutoff_scene.height = 64;
     near_cutoff_scene.initial_step_M = 0.01;
     near_cutoff_scene.max_step_M = 0.1;
     ReferenceTracerBuild near_cutoff_built =
@@ -91,7 +99,7 @@ int main() {
     if (near_cutoff_built) {
         const ReferenceRayResult near_cutoff =
             near_cutoff_built.tracer->trace(
-                perspective_camera_ray(near_cutoff_scene, 25, 32));
+                perspective_camera_ray(near_cutoff_scene, 28, 10));
         check(
             "near-cutoff regression ray is captured",
             near_cutoff.classification ==
@@ -110,6 +118,9 @@ int main() {
         "escaped ray retains escape reason",
         corner.termination_reason == "escaped");
     check(
+        "escaped ray advances observer-to-past",
+        corner.final_affine_M < 0.0);
+    check(
         "escaped ray satisfies Hamiltonian gate",
         corner.max_constraint_error < 1.0e-10);
     check(
@@ -123,7 +134,7 @@ int main() {
         corner.max_carter_rel_error < 1.0e-9);
 
     CameraRay non_finite =
-        perspective_camera_ray(scene, 4, 4);
+        perspective_camera_ray(scene, 28, 10);
     non_finite.local_direction[1] =
         std::numeric_limits<double>::quiet_NaN();
     const ReferenceRayResult rejected =

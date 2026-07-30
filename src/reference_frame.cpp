@@ -1,7 +1,7 @@
 #include "gargantua/reference/reference_frame.h"
 
-#include "gargantua/reference/reference_numerics.h"
 #include "reference_frame_summary.h"
+#include "reference_ray_evidence.h"
 
 #include <algorithm>
 #include <cmath>
@@ -29,35 +29,6 @@ void retain_maximum(double value, double& maximum) {
     }
 }
 
-bool successful_ray_evidence_is_valid(
-    const ReferenceRayResult& ray) {
-    const bool reason_matches =
-        (ray.classification ==
-             RayClassification::CapturedAtBlCutoff &&
-         ray.termination_reason == "interior_cutoff") ||
-        (ray.classification == RayClassification::Escaped &&
-         ray.termination_reason == "escaped");
-    return reason_matches &&
-           std::isfinite(ray.final_radius_M) &&
-           ray.final_radius_M > 0.0 &&
-           std::isfinite(ray.max_constraint_error) &&
-           ray.max_constraint_error >= 0.0 &&
-           ray.max_constraint_error <
-               reference_hamiltonian_error_gate &&
-           std::isfinite(ray.max_energy_rel_error) &&
-           ray.max_energy_rel_error >= 0.0 &&
-           ray.max_energy_rel_error <
-               reference_stationary_invariant_error_gate &&
-           std::isfinite(ray.max_lz_rel_error) &&
-           ray.max_lz_rel_error >= 0.0 &&
-           ray.max_lz_rel_error <
-               reference_stationary_invariant_error_gate &&
-           std::isfinite(ray.max_carter_rel_error) &&
-           ray.max_carter_rel_error >= 0.0 &&
-           ray.max_carter_rel_error <
-               reference_carter_relative_error_gate;
-}
-
 } // namespace
 
 bool summarize_reference_rays(
@@ -65,21 +36,18 @@ bool summarize_reference_rays(
     ReferenceFrameSummary& summary) noexcept {
     summary = {};
     for (const ReferenceRayResult& ray : rays) {
-        if (ray.termination_reason.empty()) {
+        if (!valid_reference_ray_evidence(ray)) {
             return false;
         }
         switch (ray.classification) {
         case RayClassification::CapturedAtBlCutoff:
             ++summary.captured;
-            if (!successful_ray_evidence_is_valid(ray)) {
-                return false;
-            }
             break;
         case RayClassification::Escaped:
             ++summary.escaped;
-            if (!successful_ray_evidence_is_valid(ray)) {
-                return false;
-            }
+            break;
+        case RayClassification::DiskSurfaceHit:
+            ++summary.disk_surface_hits;
             break;
         case RayClassification::Unconverged:
             ++summary.unconverged;
@@ -89,6 +57,9 @@ bool summarize_reference_rays(
             break;
         case RayClassification::InitializationError:
             ++summary.initialization_errors;
+            break;
+        case RayClassification::TransferFailure:
+            ++summary.transfer_failures;
             break;
         default:
             return false;
@@ -109,6 +80,16 @@ bool summarize_reference_rays(
         retain_maximum(
             ray.max_carter_rel_error,
             summary.max_carter_rel_error);
+        retain_maximum(
+            ray.redshift_g,
+            summary.max_redshift_g);
+        retain_maximum(
+            ray.observed_specific_intensity,
+            summary.max_observed_specific_intensity);
+        retain_maximum(
+            ray.observed_bolometric_intensity,
+            summary.max_observed_bolometric_intensity);
+        summary.disk_crossings += ray.disk_crossings;
         summary.max_accepted_steps =
             std::max(summary.max_accepted_steps, ray.accepted_steps);
         summary.max_rejected_steps =
@@ -122,12 +103,15 @@ bool reference_frame_summaries_equal(
     const ReferenceFrameSummary& right) noexcept {
     return left.captured == right.captured &&
            left.escaped == right.escaped &&
+           left.disk_surface_hits == right.disk_surface_hits &&
            left.unconverged == right.unconverged &&
            left.constraint_violations ==
                right.constraint_violations &&
            left.initialization_errors ==
                right.initialization_errors &&
+           left.transfer_failures == right.transfer_failures &&
            left.failed == right.failed &&
+           left.disk_crossings == right.disk_crossings &&
            left.max_constraint_error ==
                right.max_constraint_error &&
            left.max_energy_rel_error ==
@@ -135,6 +119,11 @@ bool reference_frame_summaries_equal(
            left.max_lz_rel_error == right.max_lz_rel_error &&
            left.max_carter_rel_error ==
                right.max_carter_rel_error &&
+           left.max_redshift_g == right.max_redshift_g &&
+           left.max_observed_specific_intensity ==
+               right.max_observed_specific_intensity &&
+           left.max_observed_bolometric_intensity ==
+               right.max_observed_bolometric_intensity &&
            left.max_accepted_steps ==
                right.max_accepted_steps &&
            left.max_rejected_steps ==

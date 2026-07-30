@@ -9,12 +9,16 @@ const char* ray_classification_name(
         return "captured_at_bl_cutoff";
     case RayClassification::Escaped:
         return "escaped";
+    case RayClassification::DiskSurfaceHit:
+        return "disk_surface_hit";
     case RayClassification::Unconverged:
         return "unconverged";
     case RayClassification::ConstraintViolation:
         return "constraint_violation";
     case RayClassification::InitializationError:
         return "initialization_error";
+    case RayClassification::TransferFailure:
+        return "transfer_failure";
     }
     return "unknown";
 }
@@ -22,7 +26,8 @@ const char* ray_classification_name(
 bool is_failed_classification(
     RayClassification value) noexcept {
     return value != RayClassification::CapturedAtBlCutoff &&
-           value != RayClassification::Escaped;
+           value != RayClassification::Escaped &&
+           value != RayClassification::DiskSurfaceHit;
 }
 
 } // namespace gargantua::reference

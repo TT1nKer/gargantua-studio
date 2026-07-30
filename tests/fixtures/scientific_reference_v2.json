@@ -1,0 +1,94 @@
+{
+  "schema": "gargantua.scientific-reference-fixture.v2",
+  "status": "accepted",
+  "gargantua": {
+    "version": "0.1.0",
+    "commit": "9425c0428169a4a44a292698a8c17f839938ea19"
+  },
+  "solar": {
+    "version": "0.2.0-alpha.1",
+    "physics_contract": "relativity-v3-phase2",
+    "commit": "635d99f47fa50be892416986f2723d035ee2acc1"
+  },
+  "scene": {
+    "mass_M": 1.0,
+    "spin_chi": 0.5,
+    "observer_radius_M": 30.0,
+    "inclination_degrees": 85.0,
+    "vertical_fov_degrees": 40.0,
+    "width": 64,
+    "height": 36,
+    "escape_radius_M": 60.0,
+    "max_affine_M": 200.0,
+    "initial_mino_step": 0.02,
+    "max_mino_step": 0.25,
+    "disk_outer_radius_M": 20.0,
+    "disk_inner_edge": "prograde-isco",
+    "disk_temperature_scale": 1.0,
+    "disk_density_scale": 1.0,
+    "disk_density_power": 0.75,
+    "disk_specific_intensity_scale": 1.0,
+    "disk_bolometric_intensity_scale": 1.0,
+    "disk_opacity": "opaque",
+    "disk_surface_optical_depth": 1.0,
+    "disk_max_crossings": 8,
+    "display_exposure": 1.0
+  },
+  "physics": {
+    "solver": "kerr-separated-mino",
+    "direction": "observer-to-past",
+    "photon_orientation": "future-directed",
+    "outer_horizon_radius_M": 1.8660254037844386,
+    "capture_radius_M": 1.8670254037844385,
+    "hamiltonian_gate": 1e-10,
+    "energy_gate": 1e-12,
+    "lz_gate": 1e-12,
+    "carter_gate": 1e-9
+  },
+  "summary": {
+    "captured": 120,
+    "escaped": 1287,
+    "disk_surface_hits": 897,
+    "failed": 0,
+    "disk_crossings": 897,
+    "max_constraint_error": 2.0395437490124286e-14,
+    "max_energy_rel_error": 0.0,
+    "max_lz_rel_error": 0.0,
+    "max_carter_rel_error": 7.677006197971529e-14,
+    "max_redshift_g": 1.4734490847779178,
+    "max_observed_specific_intensity": 1.4082970614670725,
+    "max_observed_bolometric_intensity": 0.22800185228949879,
+    "max_accepted_steps": 2768,
+    "max_rejected_steps": 54
+  },
+  "files": {
+    "beauty.ppm": {
+      "bytes": 6925,
+      "fnv1a64": "69366ae1b7ee86b0",
+      "sha256": "fc742cf970fb58d53d1f2c93b5adad814819a87e6724cba96bf9330850ba15f9"
+    },
+    "classification.ppm": {
+      "bytes": 6925,
+      "fnv1a64": "2c632e9865f0e440",
+      "sha256": "b1de3bc7b01494b9f8439ef2f71dd23b0269291642e28f4b8c6d847adf6adb4f"
+    },
+    "rays.csv": {
+      "bytes": 492203,
+      "fnv1a64": "2d51d7077551d6ee",
+      "sha256": "586879ef3c64f86cbccf65ad83ba5fdf3473a94d5207949a915c47be77b8c84c"
+    },
+    "manifest.json": {
+      "sha256": "9506760c866e6d299519a25df599ef257bd985f967b174679ddb0ed1c0906671"
+    }
+  },
+  "schwarzschild_boundary": {
+    "resolution": [64, 64],
+    "captured": 708,
+    "escaped": 3388,
+    "failed": 0,
+    "captured_bbox": [17, 17, 46, 46],
+    "analytic_radius_pixels": 14.922101623505476,
+    "observed_bracket_pixels": [14.5, 15.5],
+    "midpoint_error_pixels": 0.0778983764945238
+  }
+}

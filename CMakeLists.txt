@@ -38,12 +38,18 @@ add_library(
     gargantua_reference
     src/perspective_camera.cpp
     src/reference_frame.cpp
+    src/reference_image_encoding.cpp
     src/reference_manifest.cpp
     src/reference_output.cpp
     src/reference_ray.cpp
+    src/reference_ray_evidence.cpp
     src/reference_renderer.cpp
     src/reference_scene.cpp
     src/reference_serialization.cpp
+    src/solar_kerr_path.cpp
+    src/solar_kerr_path_result.cpp
+    src/solar_kerr_path_setup.cpp
+    src/solar_thin_disk.cpp
     src/solar_kerr_ray_tracer.cpp)
 target_compile_features(gargantua_reference PUBLIC cxx_std_17)
 target_include_directories(
@@ -124,6 +130,23 @@ if(GARGANTUA_BUILD_TESTS)
         COMMAND test-solar-kerr-ray-tracer)
 
     add_executable(
+        test-solar-kerr-path
+        tests/test_solar_kerr_path.cpp)
+    target_compile_features(
+        test-solar-kerr-path
+        PRIVATE cxx_std_17)
+    target_include_directories(
+        test-solar-kerr-path
+        PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
+    target_link_libraries(
+        test-solar-kerr-path
+        PRIVATE gargantua_reference Solar::Relativity)
+    gargantua_enable_warnings(test-solar-kerr-path)
+    add_test(
+        NAME gargantua.solar_kerr_path
+        COMMAND test-solar-kerr-path)
+
+    add_executable(
         test-reference-renderer
         tests/test_reference_renderer.cpp)
     target_compile_features(
@@ -136,6 +159,23 @@ if(GARGANTUA_BUILD_TESTS)
     add_test(
         NAME gargantua.reference_renderer
         COMMAND test-reference-renderer)
+
+    add_executable(
+        test-reference-ray-evidence
+        tests/test_reference_ray_evidence.cpp)
+    target_compile_features(
+        test-reference-ray-evidence
+        PRIVATE cxx_std_17)
+    target_include_directories(
+        test-reference-ray-evidence
+        PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
+    target_link_libraries(
+        test-reference-ray-evidence
+        PRIVATE gargantua_reference)
+    gargantua_enable_warnings(test-reference-ray-evidence)
+    add_test(
+        NAME gargantua.reference_ray_evidence
+        COMMAND test-reference-ray-evidence)
 
     add_executable(
         test-reference-output

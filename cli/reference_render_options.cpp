@@ -141,16 +141,86 @@ ReferenceRenderParse parse_reference_render_options(
                 return failure("--max-affine-M requires a finite number");
             }
             options.scene.max_affine_M = number;
-        } else if (name == "--initial-step-M") {
+        } else if (
+            name == "--initial-mino-step" ||
+            name == "--initial-step-M") {
             if (!parse_finite_double(text, number)) {
-                return failure("--initial-step-M requires a finite number");
+                return failure(
+                    name + " requires a finite number");
             }
             options.scene.initial_step_M = number;
-        } else if (name == "--max-step-M") {
+        } else if (
+            name == "--max-mino-step" ||
+            name == "--max-step-M") {
             if (!parse_finite_double(text, number)) {
-                return failure("--max-step-M requires a finite number");
+                return failure(
+                    name + " requires a finite number");
             }
             options.scene.max_step_M = number;
+        } else if (name == "--disk-outer-r-M") {
+            if (!parse_finite_double(text, number)) {
+                return failure(
+                    "--disk-outer-r-M requires a finite number");
+            }
+            options.scene.disk.outer_radius_M = number;
+        } else if (name == "--disk-temperature-scale") {
+            if (!parse_finite_double(text, number)) {
+                return failure(
+                    "--disk-temperature-scale requires a finite number");
+            }
+            options.scene.disk.temperature_scale = number;
+        } else if (name == "--disk-density-scale") {
+            if (!parse_finite_double(text, number)) {
+                return failure(
+                    "--disk-density-scale requires a finite number");
+            }
+            options.scene.disk.density_scale = number;
+        } else if (name == "--disk-density-power") {
+            if (!parse_finite_double(text, number)) {
+                return failure(
+                    "--disk-density-power requires a finite number");
+            }
+            options.scene.disk.density_power = number;
+        } else if (name == "--disk-specific-scale") {
+            if (!parse_finite_double(text, number)) {
+                return failure(
+                    "--disk-specific-scale requires a finite number");
+            }
+            options.scene.disk.specific_intensity_scale = number;
+        } else if (name == "--disk-bolometric-scale") {
+            if (!parse_finite_double(text, number)) {
+                return failure(
+                    "--disk-bolometric-scale requires a finite number");
+            }
+            options.scene.disk.bolometric_intensity_scale = number;
+        } else if (name == "--disk-opacity") {
+            if (text == "opaque") {
+                options.scene.disk.opacity =
+                    reference::ReferenceDiskOpacity::Opaque;
+            } else if (text == "semi-transparent") {
+                options.scene.disk.opacity =
+                    reference::ReferenceDiskOpacity::SemiTransparent;
+            } else {
+                return failure(
+                    "--disk-opacity must be opaque or semi-transparent");
+            }
+        } else if (name == "--disk-surface-optical-depth") {
+            if (!parse_finite_double(text, number)) {
+                return failure(
+                    "--disk-surface-optical-depth requires a finite number");
+            }
+            options.scene.disk.surface_optical_depth = number;
+        } else if (name == "--disk-max-crossings") {
+            if (!parse_size(text, size)) {
+                return failure(
+                    "--disk-max-crossings requires an unsigned integer");
+            }
+            options.scene.disk.max_crossings = size;
+        } else if (name == "--exposure") {
+            if (!parse_finite_double(text, number)) {
+                return failure("--exposure requires a finite number");
+            }
+            options.scene.disk.display_exposure = number;
         } else {
             return failure("unknown option: " + name);
         }
@@ -158,6 +228,16 @@ ReferenceRenderParse parse_reference_render_options(
 
     if (!has_output) {
         return failure("--output is required");
+    }
+    if (seen.count("--initial-mino-step") != 0 &&
+        seen.count("--initial-step-M") != 0) {
+        return failure(
+            "--initial-mino-step conflicts with legacy --initial-step-M");
+    }
+    if (seen.count("--max-mino-step") != 0 &&
+        seen.count("--max-step-M") != 0) {
+        return failure(
+            "--max-mino-step conflicts with legacy --max-step-M");
     }
     const reference::SceneValidation validation =
         reference::validate_reference_scene(options.scene);
@@ -180,9 +260,26 @@ std::string reference_render_usage() {
         "  --height <pixels>         Image height, maximum 4096\n"
         "  --escape-r-M <value>      Escape event radius\n"
         "  --max-affine-M <value>    Maximum affine integration length\n"
-        "  --initial-step-M <value>  Initial DOPRI5 step\n"
-        "  --max-step-M <value>      Maximum DOPRI5 step\n"
-        "  --help                    Show this help alone\n";
+        "  --initial-mino-step <value> Initial Mino-time DOPRI5 step\n"
+        "  --max-mino-step <value>     Maximum Mino-time DOPRI5 step\n"
+        "  --initial-step-M <value>    Legacy initial Mino-step alias\n"
+        "  --max-step-M <value>        Legacy maximum Mino-step alias\n"
+        "  --disk-outer-r-M <value>    Thin-disk outer radius\n"
+        "  --disk-temperature-scale <value>\n"
+        "  --disk-density-scale <value>\n"
+        "  --disk-density-power <value>\n"
+        "  --disk-specific-scale <value>\n"
+        "  --disk-bolometric-scale <value>\n"
+        "  --disk-opacity <mode>       opaque or semi-transparent\n"
+        "  --disk-surface-optical-depth <value>\n"
+        "  --disk-max-crossings <count>\n"
+        "  --exposure <value>          Beauty-preview display exposure\n"
+        "  --help                      Show this help alone\n"
+        "\n"
+        "CPU reference uses future-directed photons integrated "
+        "observer-to-past.\n"
+        "The renderer is a scientific thin-disk model, "
+        "not GRMHD or film look.\n";
 }
 
 } // namespace gargantua::cli

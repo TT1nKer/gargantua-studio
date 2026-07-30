@@ -12,8 +12,30 @@ namespace {
 
 ReferenceOutputResult failure(std::string message) {
     return ReferenceOutputResult{
-        false, std::move(message), 0, 0};
+        false, std::move(message), 0, 0, 0};
 }
+
+class PartialGenerationGuard {
+public:
+    explicit PartialGenerationGuard(
+        std::filesystem::path path)
+        : path_(std::move(path)) {}
+
+    ~PartialGenerationGuard() {
+        if (!committed_) {
+            std::error_code ignored;
+            std::filesystem::remove_all(path_, ignored);
+        }
+    }
+
+    void commit() noexcept {
+        committed_ = true;
+    }
+
+private:
+    std::filesystem::path path_;
+    bool committed_ = false;
+};
 
 bool write_bytes(
     const std::filesystem::path& path,
@@ -76,11 +98,18 @@ ReferenceOutputResult write_reference_generation(
     if (!fs::create_directory(part_directory, error) || error) {
         return failure("cannot create partial output generation");
     }
+    PartialGenerationGuard partial_guard(part_directory);
 
     if (!write_bytes(
+            part_directory / "beauty.ppm",
+            serialized.beauty_ppm.data(),
+            serialized.beauty_ppm.size())) {
+        return failure("cannot write beauty.ppm");
+    }
+    if (!write_bytes(
             part_directory / "classification.ppm",
-            serialized.ppm.data(),
-            serialized.ppm.size())) {
+            serialized.classification_ppm.data(),
+            serialized.classification_ppm.size())) {
         return failure("cannot write classification.ppm");
     }
     if (!write_text(
@@ -98,10 +127,12 @@ ReferenceOutputResult write_reference_generation(
     if (error) {
         return failure("cannot commit reference output generation");
     }
+    partial_guard.commit();
     return ReferenceOutputResult{
         true,
         {},
-        serialized.ppm_checksum,
+        serialized.beauty_ppm_checksum,
+        serialized.classification_ppm_checksum,
         serialized.csv_checksum,
     };
 }

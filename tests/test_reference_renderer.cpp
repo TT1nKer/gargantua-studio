@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <limits>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -43,41 +44,86 @@ public:
                 ? RayClassification::CapturedAtBlCutoff
                 : RayClassification::Escaped;
         if (ray.pixel_x == 2 && ray.pixel_y == 1) {
-            classification =
-                unknown_at_last
-                    ? static_cast<RayClassification>(99)
-                    : RayClassification::ConstraintViolation;
+            if (unknown_at_last) {
+                classification =
+                    static_cast<RayClassification>(99);
+            } else if (disk_at_last) {
+                classification =
+                    RayClassification::DiskSurfaceHit;
+            } else if (transfer_failure_at_last) {
+                classification =
+                    RayClassification::TransferFailure;
+            } else {
+                classification =
+                    RayClassification::ConstraintViolation;
+            }
         }
         const char* termination_reason =
             classification ==
                     RayClassification::CapturedAtBlCutoff
                 ? "interior_cutoff"
                 : ray_classification_name(classification);
-        return ReferenceRayResult{
+        ReferenceRayResult result{
             classification,
             termination_reason,
+            -1.0 - static_cast<double>(ray.pixel_y),
             2.0 + static_cast<double>(ray.pixel_x),
+            1.5 + static_cast<double>(ray.pixel_x),
+            0.1 * static_cast<double>(ray.pixel_y),
             1.0e-12 * static_cast<double>(ray.pixel_x + 1),
             3.0e-14 * static_cast<double>(ray.pixel_x + 1),
             4.0e-14 * static_cast<double>(ray.pixel_y + 1),
             2.0e-12 * static_cast<double>(ray.pixel_y + 1),
             10 + ray.pixel_x + 3 * ray.pixel_y,
             ray.pixel_y,
+            std::numeric_limits<double>::quiet_NaN(),
+            std::numeric_limits<double>::quiet_NaN(),
+            std::numeric_limits<double>::quiet_NaN(),
+            0.0,
+            0.0,
+            0,
         };
+        if (classification ==
+            RayClassification::DiskSurfaceHit) {
+            result.disk_radius_M = result.final_radius_M;
+            result.redshift_g = 0.8;
+            result.observed_temperature = 4.0;
+            result.observed_specific_intensity = 2.0;
+            result.observed_bolometric_intensity = 3.0;
+            result.disk_crossings = 1;
+        }
+        return result;
     }
 
     mutable std::vector<Pixel> seen;
     bool throw_at_last = false;
     bool unknown_at_last = false;
+    bool disk_at_last = false;
+    bool transfer_failure_at_last = false;
 
 private:
     ReferenceTracerInfo info_{
-        "test-solar", "test-contract", 2.1};
+        "test-solar", "test-contract", 2.0, 2.1};
 };
 
 } // namespace
 
 int main() {
+    check("disk classification name is explicit",
+          std::string(ray_classification_name(
+              RayClassification::DiskSurfaceHit)) ==
+              "disk_surface_hit");
+    check("disk classification is successful",
+          !is_failed_classification(
+              RayClassification::DiskSurfaceHit));
+    check("transfer failure name is explicit",
+          std::string(ray_classification_name(
+              RayClassification::TransferFailure)) ==
+              "transfer_failure");
+    check("transfer failure is failed",
+          is_failed_classification(
+              RayClassification::TransferFailure));
+
     ReferenceScene scene = reference_scene_defaults();
     scene.width = 3;
     scene.height = 2;
@@ -135,6 +181,39 @@ int main() {
     check("tracer contract is copied into frame",
           rendered.frame->tracer.physics_contract ==
               "test-contract");
+
+    RecordingTracer disk_tracer;
+    disk_tracer.disk_at_last = true;
+    const ReferenceRenderResult disk_frame =
+        render_reference_frame(scene, disk_tracer);
+    check("disk evidence frame renders", bool(disk_frame));
+    if (disk_frame) {
+        check("disk surface hit is counted",
+              disk_frame.frame->summary.disk_surface_hits == 1);
+        check("disk crossing is counted",
+              disk_frame.frame->summary.disk_crossings == 1);
+        check("disk redshift maximum is retained",
+              std::fabs(
+                  disk_frame.frame->summary.max_redshift_g -
+                  0.8) < 1.0e-15);
+        check("successful disk frame remains complete",
+              disk_frame.frame->status == FrameStatus::Complete);
+    }
+
+    RecordingTracer transfer_tracer;
+    transfer_tracer.transfer_failure_at_last = true;
+    const ReferenceRenderResult transfer_frame =
+        render_reference_frame(scene, transfer_tracer);
+    check("transfer failure frame renders", bool(transfer_frame));
+    if (transfer_frame) {
+        check("transfer failure is counted",
+              transfer_frame.frame->summary.transfer_failures == 1);
+        check("transfer failure contributes to failed count",
+              transfer_frame.frame->summary.failed == 1);
+        check("transfer failure marks diagnostic frame",
+              transfer_frame.frame->status ==
+                  FrameStatus::DiagnosticFailed);
+    }
 
     RecordingTracer throwing;
     throwing.throw_at_last = true;
