@@ -54,8 +54,10 @@ ray makes the manifest `diagnostic_failed` and the command exit `4`.
 
 The current capture event is `r_+ + 1e-3 M` in Boyer-Lindquist coordinates.
 It is an exterior classification cutoff, not a horizon-crossing claim. The
-next reusable Solar requirement is a bounded trajectory-diagnostics API for
-minimum radius, azimuthal winding, and selected event history. Disk
-intersections, redshift/radiative transfer, Kerr-Schild horizon crossing,
-CUDA, OpenEXR/ACES, temporal validation, and beauty rendering remain explicit
-missing capabilities.
+locked Solar Phase 3 API now provides separated Mino-time evolution, minimum
+radius, and azimuthal winding; `gargantua-probe` exercises that contract. The
+reference raster deliberately remains on the generic Hamiltonian path until
+a dedicated migration can compare complete classifications and invariants.
+Selected event history, disk intersections, redshift/radiative transfer,
+Kerr-Schild horizon crossing, CUDA, OpenEXR/ACES, temporal validation, and
+beauty rendering remain explicit missing capabilities.
