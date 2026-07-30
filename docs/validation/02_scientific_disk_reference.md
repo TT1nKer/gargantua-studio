@@ -120,6 +120,14 @@ manifest, serialization, option-parser, and path files each retain one
 cohesive responsibility; no CUDA, WebGL, OpenEXR, or UI implementation is
 present.
 
+GitHub Actions run
+[`30547816453`](https://github.com/TT1nKer/gargantua-studio/actions/runs/30547816453)
+validated exact PR head
+`01ae693f4a3e73a336ab3f7fa47985a308cc8492` on `ubuntu-latest`.
+The warning-enabled Release job configured and built successfully, passed
+CTest `10/10` in `24.65 s`, and completed the `10 x 8` CLI reference with
+`12` captured, `52` escaped, `16` disk hits, and zero failed rays.
+
 ## Inputs
 
 The primary scene is `64 x 36`, spin `0.5`, observer radius `30 M`,

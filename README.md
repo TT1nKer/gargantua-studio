@@ -100,7 +100,9 @@ pixel.
 
 The accepted local build is macOS arm64 with AppleClang 16 in Release mode.
 The repository CI gate independently configures, builds, tests, and renders a
-small reference on `ubuntu-latest`.
+small reference on `ubuntu-latest`. PR validation run
+[`30547816453`](https://github.com/TT1nKer/gargantua-studio/actions/runs/30547816453)
+passed all `10/10` tests and rendered with zero failed rays.
 
 ## Explicitly missing
 

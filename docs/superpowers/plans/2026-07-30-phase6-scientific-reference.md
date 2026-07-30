@@ -1136,7 +1136,7 @@ Check:
 - no CUDA/WebGL/OpenEXR/UI placeholder was added;
 - no untracked root `.DS_Store` was staged.
 
-- [ ] **Step 5: Fresh completion evidence**
+- [x] **Step 5: Fresh completion evidence**
 
 Run:
 
@@ -1150,7 +1150,7 @@ ctest --test-dir build-release --output-on-failure
 
 Record exact pass counts and the accepted reference maxima/checksums.
 
-- [ ] **Step 6: Push and create the public PR**
+- [x] **Step 6: Push and create the public PR**
 
 ```sh
 git push -u origin codex/phase6-scientific-reference
