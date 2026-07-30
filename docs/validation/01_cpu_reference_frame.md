@@ -45,7 +45,7 @@ and backward-ray tests.
 
 The accepted Kerr generation and its repeat were produced from a clean
 Gargantua worktree at
-`373be02aa196247177286c63844acd899261b05c`:
+`d846274f2e78af67752dccdd0d64a8c15045ca43`:
 
 ```sh
 cmake -S . -B build \
@@ -122,10 +122,10 @@ Both Kerr commands exited `0`:
 {"status":"complete","captured":218,"escaped":2086,"failed":0,"ppm_checksum_fnv1a64":"e572ca151ab8c4ee","csv_checksum_fnv1a64":"94671d7df84e4dc9"}
 ```
 
-The two runs took `10.25 s` and `9.53 s` wall time (`4.28 s` and `4.31 s`
+The two runs took `2.63 s` and `2.65 s` wall time (`2.60 s` and `2.61 s`
 user CPU time) in the validation environment. All three files compared
 byte-for-byte equal. The manifest recorded Gargantua
-`373be02aa196247177286c63844acd899261b05c`, `dirty=false`, and the locked
+`d846274f2e78af67752dccdd0d64a8c15045ca43`, `dirty=false`, and the locked
 Solar identity above.
 
 Kerr diagnostics:
@@ -149,7 +149,7 @@ checksum, were:
 ```text
 ed1e21cae38163adba4608572468b70923a9f0bc42391f7ae943ae6dff9ead4f  classification.ppm
 e161ec02d2d1db382d7528271744172d87c256151b82a2f76350c2c638dcf6e9  rays.csv
-d794a0fc72047291ae8886ddbae7d5abc2f24deab4ea45965a8ca4090d41989c  manifest.json
+47ade95c9c01c0d8482cd4671b5ea8ebcd7f79e1b4baadb72e9aceaf19fe747b  manifest.json
 ```
 
 The Schwarzschild run also exited `0`: `708` captured, `3388` escaped,
