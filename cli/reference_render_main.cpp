@@ -64,6 +64,10 @@ int main(int argc, char** argv) {
             << reference::frame_status_name(rendered.frame->status)
             << "\",\"captured\":" << summary.captured
             << ",\"escaped\":" << summary.escaped
+            << ",\"disk_surface_hits\":"
+            << summary.disk_surface_hits
+            << ",\"disk_crossings\":"
+            << summary.disk_crossings
             << ",\"failed\":" << summary.failed
             << ",\"beauty_ppm_checksum_fnv1a64\":\""
             << std::hex << std::setw(16) << std::setfill('0')

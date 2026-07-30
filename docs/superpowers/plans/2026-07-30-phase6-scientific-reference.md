@@ -831,7 +831,7 @@ git commit -m "feat: write scientific reference beauty"
 - Consumes: validated `ReferenceScene`.
 - Produces: canonical options listed in the design plus legacy step aliases.
 
-- [ ] **Step 1: Add parser red tests**
+- [x] **Step 1: Add parser red tests**
 
 Add successful parsing for all disk values and each opacity. Add failures for:
 
@@ -854,7 +854,7 @@ const auto parsed = parse_reference_render_options({
 check("canonical and legacy step aliases conflict", !parsed);
 ```
 
-- [ ] **Step 2: Run parser tests red**
+- [x] **Step 2: Run parser tests red**
 
 ```sh
 cmake --build build-phase5 --target test-reference-render-options --parallel 4
@@ -863,14 +863,14 @@ cmake --build build-phase5 --target test-reference-render-options --parallel 4
 
 Expected: new option assertions fail.
 
-- [ ] **Step 3: Parse options into scene values**
+- [x] **Step 3: Parse options into scene values**
 
 Canonical `--initial-mino-step` and `--max-mino-step` map to the existing
 positive magnitude scene fields. Legacy `--initial-step-M` and
 `--max-step-M` map identically but conflict with their canonical counterpart.
 All validation remains centralized in `validate_reference_scene`.
 
-- [ ] **Step 4: Update help and CLI JSON**
+- [x] **Step 4: Update help and CLI JSON**
 
 Help must state:
 
@@ -882,13 +882,13 @@ The renderer is a scientific thin-disk model, not GRMHD or film look.
 CLI JSON adds disk hits, crossings, beauty checksum, classification checksum,
 and CSV checksum.
 
-- [ ] **Step 5: Extend the shell integration**
+- [x] **Step 5: Extend the shell integration**
 
 The fixed `10 x 8` scene must write four files, contain nonzero capture,
 escape, and disk populations, contain zero failures, and expose 80 CSV rows.
 Retain duplicate-output exit code 5 and diagnostic-frame exit code 4.
 
-- [ ] **Step 6: Run CLI tests**
+- [x] **Step 6: Run CLI tests**
 
 ```sh
 cmake --build build-phase5 --target test-reference-render-options \
@@ -899,7 +899,7 @@ ctest --test-dir build-phase5 -R \
 
 Expected: both tests pass.
 
-- [ ] **Step 7: Commit CLI contract**
+- [x] **Step 7: Commit CLI contract**
 
 ```sh
 git add cli/reference_render_options.h cli/reference_render_options.cpp \

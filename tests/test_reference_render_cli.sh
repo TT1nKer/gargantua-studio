@@ -22,6 +22,7 @@ if [ "$invalid_code" -ne 2 ]; then
 fi
 
 output="$test_root/reference-frame"
+render_result="$test_root/render-result.json"
 "$renderer" \
     --output "$output" \
     --mass-M 1 \
@@ -33,8 +34,18 @@ output="$test_root/reference-frame"
     --height 8 \
     --escape-r-M 60 \
     --max-affine-M 200 \
-    --initial-step-M 0.02 \
-    --max-step-M 0.25
+    --initial-mino-step 0.02 \
+    --max-mino-step 0.25 \
+    --disk-outer-r-M 20 \
+    --disk-temperature-scale 1 \
+    --disk-density-scale 1 \
+    --disk-density-power 0.75 \
+    --disk-specific-scale 1 \
+    --disk-bolometric-scale 1 \
+    --disk-opacity opaque \
+    --disk-surface-optical-depth 1 \
+    --disk-max-crossings 8 \
+    --exposure 1 >"$render_result"
 
 test -f "$output/beauty.ppm"
 test -f "$output/classification.ppm"
@@ -44,6 +55,14 @@ grep -Eq '"captured":[1-9][0-9]*' "$output/manifest.json"
 grep -Eq '"escaped":[1-9][0-9]*' "$output/manifest.json"
 grep -Eq '"disk_surface_hits":[1-9][0-9]*' "$output/manifest.json"
 grep -q '"failed":0' "$output/manifest.json"
+grep -Eq '"disk_surface_hits":[1-9][0-9]*' "$render_result"
+grep -Eq '"disk_crossings":[1-9][0-9]*' "$render_result"
+grep -Eq '"beauty_ppm_checksum_fnv1a64":"[0-9a-f]{16}"' \
+    "$render_result"
+grep -Eq '"classification_ppm_checksum_fnv1a64":"[0-9a-f]{16}"' \
+    "$render_result"
+grep -Eq '"csv_checksum_fnv1a64":"[0-9a-f]{16}"' \
+    "$render_result"
 
 ray_rows=$(awk 'END { print NR - 1 }' "$output/rays.csv")
 if [ "$ray_rows" -ne 80 ]; then
