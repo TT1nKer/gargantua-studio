@@ -161,12 +161,15 @@ For every pixel, `SolarKerrRayTracer`:
 The capture radius is:
 
 ```text
-r_capture = r_+ + 1e-5 M
+r_capture = r_+ + 1e-4 M
 ```
 
 This event is an `InteriorCutoff`, not a claimed Boyer-Lindquist horizon
-crossing. Gargantua classifies it as `captured_at_bl_cutoff`. The escape event
-uses Solar's `Escaped` termination reason.
+crossing. The margin was established by the radial-ray constraint gate:
+`1e-5 M` reached normalized Hamiltonian error `1.0225e-10`, while `1e-4 M`
+terminated at `2.65657e-11` without weakening the required `1e-10` gate.
+Gargantua classifies it as `captured_at_bl_cutoff`. The escape event uses
+Solar's `Escaped` termination reason.
 
 An ordinary ray is accepted only when:
 
