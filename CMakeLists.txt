@@ -5,6 +5,17 @@ project(GargantuaStudio VERSION 0.1.0 LANGUAGES CXX)
 include(CTest)
 include(cmake/SolarDependency.cmake)
 
+option(GARGANTUA_BUILD_TESTS "Build Gargantua tests" ON)
+
+add_library(
+    gargantua_reference
+    src/perspective_camera.cpp
+    src/reference_scene.cpp)
+target_compile_features(gargantua_reference PUBLIC cxx_std_17)
+target_include_directories(
+    gargantua_reference
+    PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+
 add_executable(gargantua-probe src/probe_main.cpp)
 target_compile_features(gargantua-probe PRIVATE cxx_std_17)
 target_compile_definitions(
@@ -20,3 +31,10 @@ set_tests_properties(
     PROPERTIES
         PASS_REGULAR_EXPRESSION
             "\"physics_contract\":\"${GARGANTUA_SOLAR_PHYSICS_CONTRACT}\"")
+
+if(GARGANTUA_BUILD_TESTS)
+    add_executable(test-scene-camera tests/test_scene_camera.cpp)
+    target_compile_features(test-scene-camera PRIVATE cxx_std_17)
+    target_link_libraries(test-scene-camera PRIVATE gargantua_reference)
+    add_test(NAME gargantua.scene_camera COMMAND test-scene-camera)
+endif()
