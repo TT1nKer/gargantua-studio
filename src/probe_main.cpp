@@ -1,4 +1,7 @@
 #include "solar/relativity/kerr_shadow.h"
+#include "solar/relativity/kerr_separated.h"
+#include "solar/relativity/local_initialization.h"
+#include "solar/relativity/observer.h"
 #include "solar/version.h"
 
 #include <algorithm>
@@ -56,6 +59,50 @@ int main() {
         return 3;
     }
 
+    const solar::relativity::Contravariant4 observer_position{
+        solar::relativity::Vec4{{
+            0.0,
+            20.0,
+            half_pi,
+            0.0,
+        }}};
+    const auto observer =
+        solar::relativity::make_zamo_observer(
+            metric, observer_position);
+    if (!observer) {
+        std::cerr << "Solar ZAMO construction failed\n";
+        return 4;
+    }
+    const auto photon =
+        solar::relativity::initialize_local_photon(
+            metric,
+            *observer.frame,
+            solar::relativity::Vec3{{-1.0, 0.0, 0.0}});
+    if (!photon) {
+        std::cerr << "Solar photon initialization failed\n";
+        return 5;
+    }
+
+    const auto separated_config =
+        solar::relativity::KerrSeparatedConfig::cpu_reference(
+            solar::relativity::GeodesicKind::Null,
+            1.0,
+            1.0e-5,
+            1.0e-4,
+            0.1);
+    const auto separated =
+        solar::relativity::KerrSeparatedIntegrator(metric)
+            .integrate(*photon.state, separated_config);
+    if (separated.diagnostics.reason !=
+            solar::relativity::TerminationReason::MaxAffine ||
+        separated.diagnostics.accepted_steps == 0 ||
+        !std::isfinite(separated.diagnostics.min_radius_M) ||
+        !std::isfinite(separated.diagnostics.winding) ||
+        separated.diagnostics.max_constraint_error >= 1.0e-10) {
+        std::cerr << "Solar separated Kerr integration failed\n";
+        return 6;
+    }
+
     std::cout << std::setprecision(17)
               << "{\"engine\":\"solar\""
               << ",\"solar_version\":\"" << solar::version
@@ -64,6 +111,15 @@ int main() {
               << ",\"mass\":1,\"spin\":0.5"
               << ",\"samples\":" << curve.size()
               << ",\"left\":" << left_edge
-              << ",\"right\":" << right_edge << "}\n";
+              << ",\"right\":" << right_edge
+              << ",\"separated_steps\":"
+              << separated.diagnostics.accepted_steps
+              << ",\"separated_constraint\":"
+              << separated.diagnostics.max_constraint_error
+              << ",\"separated_min_radius_M\":"
+              << separated.diagnostics.min_radius_M
+              << ",\"separated_winding\":"
+              << separated.diagnostics.winding
+              << "}\n";
     return 0;
 }
