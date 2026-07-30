@@ -71,6 +71,10 @@ Tests must fail if the direction or integration sign is reverted.
   unmodified linear values in CSV.
 - Produce a repeatable reference generation and validation report.
 
+This slice uses exactly one pixel-center ray and no random-number generator.
+The v3 fixed-seed requirement becomes active with stochastic supersampling;
+adding an unused seed field now would be a placeholder contract.
+
 ### Excluded
 
 - GRMHD, polarization, scattering, returning radiation, self-gravity, or
@@ -97,9 +101,11 @@ Tests must fail if the direction or integration sign is reverted.
 - maximum valid crossings;
 - fixed display exposure.
 
-The inner edge remains Solar's prograde ISCO default. Scene validation rejects
-non-finite values, a disk outside its admissible radial order, invalid opacity,
-zero crossing limits, and display exposure that is not positive.
+The inner edge remains Solar's prograde ISCO default. Gargantua scene
+validation rejects non-finite values, an outer edge at or inside the horizon,
+invalid opacity, zero crossing limits, and display exposure that is not
+positive. Solar's disk constructor remains authoritative for the stronger
+`outer > ISCO` physical-domain check; its error is propagated unchanged.
 
 `ReferenceRayResult` remains a plain evidence value. It gains:
 
@@ -249,6 +255,10 @@ Add classifications:
   transfer;
 - `TransferFailure`: Solar rejected material, redshift, intensity, or crossing
   composition.
+
+The debug palette adds cyan `(0,200,255)` for `DiskSurfaceHit` and red
+`(255,0,0)` for `TransferFailure`. Existing classification colors do not
+change.
 
 `Unconverged`, `ConstraintViolation`, `InitializationError`, and
 `TransferFailure` count as frame failures. Step exhaustion or near-critical
