@@ -253,6 +253,11 @@ The manifest records:
 - explicit missing capabilities;
 - status `complete` or `diagnostic_failed`.
 
+Gargantua commit and dirty-state metadata is refreshed before each build and
+compiled into the binary. It must not be a configure-time-only snapshot,
+because a later commit or source edit would otherwise produce a plausible but
+stale manifest.
+
 FNV-1a is named in the manifest and is only an accidental-corruption and
 determinism checksum, not a cryptographic authenticity claim.
 
@@ -310,6 +315,7 @@ Focused unit and integration tests cover:
 - exact PPM dimensions and palette;
 - CSV row count and header;
 - manifest contract fields, counts, missing-capability list, and checksums;
+- build provenance across clean, dirty, and advanced Git states;
 - output-directory collision and atomic part-directory behavior;
 - CLI success, help, malformed option, and failure exit codes.
 

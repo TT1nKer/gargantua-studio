@@ -16,27 +16,23 @@ function(gargantua_enable_warnings target)
     endif()
 endfunction()
 
-execute_process(
-    COMMAND git -C "${CMAKE_CURRENT_SOURCE_DIR}" rev-parse HEAD
-    RESULT_VARIABLE gargantua_git_result
-    OUTPUT_VARIABLE GARGANTUA_GIT_COMMIT
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-string(LENGTH "${GARGANTUA_GIT_COMMIT}" gargantua_commit_length)
-if(
-    NOT gargantua_git_result EQUAL 0 OR
-    NOT gargantua_commit_length EQUAL 40 OR
-    NOT GARGANTUA_GIT_COMMIT MATCHES "^[0-9a-f]+$")
-    message(FATAL_ERROR "Gargantua source has no valid Git commit")
-endif()
-execute_process(
-    COMMAND git -C "${CMAKE_CURRENT_SOURCE_DIR}" status --porcelain
-    OUTPUT_VARIABLE gargantua_git_status
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-if(gargantua_git_status STREQUAL "")
-    set(GARGANTUA_BUILD_DIRTY 0)
-else()
-    set(GARGANTUA_BUILD_DIRTY 1)
-endif()
+set(
+    GARGANTUA_GENERATED_INCLUDE_DIR
+    "${CMAKE_CURRENT_BINARY_DIR}/generated")
+set(
+    GARGANTUA_BUILD_METADATA_HEADER
+    "${GARGANTUA_GENERATED_INCLUDE_DIR}/gargantua/build_metadata.h")
+add_custom_target(
+    gargantua_build_metadata
+    COMMAND
+        "${CMAKE_COMMAND}"
+        "-DGARGANTUA_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}"
+        "-DGARGANTUA_METADATA_OUTPUT=${GARGANTUA_BUILD_METADATA_HEADER}"
+        -P
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/WriteBuildMetadata.cmake"
+    BYPRODUCTS "${GARGANTUA_BUILD_METADATA_HEADER}"
+    COMMENT "Refreshing Gargantua build provenance"
+    VERBATIM)
 
 add_library(
     gargantua_reference
@@ -52,15 +48,15 @@ add_library(
 target_compile_features(gargantua_reference PUBLIC cxx_std_17)
 target_include_directories(
     gargantua_reference
-    PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
+    PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    PRIVATE "${GARGANTUA_GENERATED_INCLUDE_DIR}")
+add_dependencies(gargantua_reference gargantua_build_metadata)
 target_link_libraries(
     gargantua_reference
     PRIVATE Solar::Relativity)
 target_compile_definitions(
     gargantua_reference
     PRIVATE
-        GARGANTUA_BUILD_GIT_COMMIT="${GARGANTUA_GIT_COMMIT}"
-        GARGANTUA_BUILD_DIRTY=${GARGANTUA_BUILD_DIRTY}
         GARGANTUA_SOLAR_GIT_COMMIT="${GARGANTUA_SOLAR_COMMIT}")
 gargantua_enable_warnings(gargantua_reference)
 
@@ -177,4 +173,13 @@ if(GARGANTUA_BUILD_TESTS)
         COMMAND
             "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_reference_render_cli.sh"
             "$<TARGET_FILE:gargantua-render-reference>")
+
+    add_test(
+        NAME gargantua.build_metadata
+        COMMAND
+            "${CMAKE_COMMAND}"
+            "-DGARGANTUA_METADATA_SCRIPT=${CMAKE_CURRENT_SOURCE_DIR}/cmake/WriteBuildMetadata.cmake"
+            "-DGARGANTUA_TEST_ROOT=${CMAKE_CURRENT_BINARY_DIR}/test-build-metadata"
+            -P
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_build_metadata.cmake")
 endif()

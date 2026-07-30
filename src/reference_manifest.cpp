@@ -1,5 +1,6 @@
 #include "reference_manifest.h"
 
+#include "gargantua/build_metadata.h"
 #include "gargantua/version.h"
 
 #include <iomanip>
