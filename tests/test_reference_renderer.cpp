@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <limits>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -56,13 +57,22 @@ public:
         return ReferenceRayResult{
             classification,
             termination_reason,
+            -1.0 - static_cast<double>(ray.pixel_y),
             2.0 + static_cast<double>(ray.pixel_x),
+            1.5 + static_cast<double>(ray.pixel_x),
+            0.1 * static_cast<double>(ray.pixel_y),
             1.0e-12 * static_cast<double>(ray.pixel_x + 1),
             3.0e-14 * static_cast<double>(ray.pixel_x + 1),
             4.0e-14 * static_cast<double>(ray.pixel_y + 1),
             2.0e-12 * static_cast<double>(ray.pixel_y + 1),
             10 + ray.pixel_x + 3 * ray.pixel_y,
             ray.pixel_y,
+            std::numeric_limits<double>::quiet_NaN(),
+            std::numeric_limits<double>::quiet_NaN(),
+            std::numeric_limits<double>::quiet_NaN(),
+            0.0,
+            0.0,
+            0,
         };
     }
 
@@ -78,6 +88,21 @@ private:
 } // namespace
 
 int main() {
+    check("disk classification name is explicit",
+          std::string(ray_classification_name(
+              RayClassification::DiskSurfaceHit)) ==
+              "disk_surface_hit");
+    check("disk classification is successful",
+          !is_failed_classification(
+              RayClassification::DiskSurfaceHit));
+    check("transfer failure name is explicit",
+          std::string(ray_classification_name(
+              RayClassification::TransferFailure)) ==
+              "transfer_failure");
+    check("transfer failure is failed",
+          is_failed_classification(
+              RayClassification::TransferFailure));
+
     ReferenceScene scene = reference_scene_defaults();
     scene.width = 3;
     scene.height = 2;

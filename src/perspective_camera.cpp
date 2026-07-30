@@ -37,9 +37,9 @@ CameraRay perspective_camera_ray(
         pixel_x,
         pixel_y,
         std::array<double, 3>{{
-            -1.0,
-            -normalized_y * tangent_half_fov,
-            normalized_x * aspect * tangent_half_fov,
+            1.0,
+            normalized_y * tangent_half_fov,
+            -normalized_x * aspect * tangent_half_fov,
         }},
     };
 }

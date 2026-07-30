@@ -40,12 +40,16 @@ std::array<unsigned char, 3> classification_color(
         return {{0, 0, 0}};
     case RayClassification::Escaped:
         return {{235, 235, 235}};
+    case RayClassification::DiskSurfaceHit:
+        return {{0, 200, 255}};
     case RayClassification::Unconverged:
         return {{255, 0, 255}};
     case RayClassification::ConstraintViolation:
         return {{255, 64, 0}};
     case RayClassification::InitializationError:
         return {{255, 255, 0}};
+    case RayClassification::TransferFailure:
+        return {{255, 0, 0}};
     }
     return {{255, 255, 0}};
 }

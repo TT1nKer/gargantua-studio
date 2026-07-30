@@ -166,8 +166,12 @@ git commit -m "build: lock Solar Phase 5 transfer API"
 - Modify: `include/gargantua/reference/reference_numerics.h`
 - Modify: `src/reference_scene.cpp`
 - Modify: `src/perspective_camera.cpp`
+- Modify: `src/reference_frame.cpp`
 - Modify: `src/reference_ray.cpp`
+- Modify: `src/reference_serialization.cpp`
+- Modify: `src/solar_kerr_ray_tracer.cpp`
 - Modify: `tests/test_scene_camera.cpp`
+- Modify: `tests/test_solar_kerr_ray_tracer.cpp`
 - Modify: `tests/test_reference_renderer.cpp`
 - Modify: `tests/test_reference_output.cpp`
 
@@ -233,7 +237,7 @@ double max_observed_specific_intensity = 0.0;
 double max_observed_bolometric_intensity = 0.0;
 ```
 
-- [ ] **Step 1: Add the camera direction regression**
+- [x] **Step 1: Add the camera direction regression**
 
 In `tests/test_scene_camera.cpp`, assert the center ray and one offset:
 
@@ -251,7 +255,7 @@ check("future photon is the negative observer-to-scene direction",
 Use exact expected values computed from the existing pixel-center formula, not
 a self-referential call to production code.
 
-- [ ] **Step 2: Run the camera test to verify red**
+- [x] **Step 2: Run the camera test to verify red**
 
 ```sh
 cmake --build build-phase5 --target test-scene-camera --parallel 4
@@ -260,7 +264,7 @@ cmake --build build-phase5 --target test-scene-camera --parallel 4
 
 Expected: the future-outward direction assertion fails.
 
-- [ ] **Step 3: Reverse all local spatial camera components**
+- [x] **Step 3: Reverse all local spatial camera components**
 
 Change `perspective_camera_ray` to:
 
@@ -276,7 +280,12 @@ return CameraRay{
 };
 ```
 
-- [ ] **Step 4: Add disk/result contracts and exhaustive names**
+Until Task 4 replaces the generic solver, pass
+`-scene.initial_step_M` to its CPU-reference configuration. Add center and
+corner assertions that every advanced final affine value is negative. This
+keeps the vertical slice physically consistent between commits.
+
+- [x] **Step 4: Add disk/result contracts and exhaustive names**
 
 Add `DiskSurfaceHit` and `TransferFailure` to `RayClassification`. Update
 `ray_classification_name` and `is_failed_classification` so disk hits succeed
@@ -287,7 +296,7 @@ Update all aggregate fixtures with explicit finite/NaN evidence consistent
 with their classification. Use a local fixture factory rather than repeating
 18 positional values in every test.
 
-- [ ] **Step 5: Add scene boundary tests**
+- [x] **Step 5: Add scene boundary tests**
 
 Cover:
 
@@ -297,10 +306,6 @@ Cover:
 - non-positive exposure;
 - negative or non-finite optical depth;
 - unknown opacity enum.
-
-Add a Solar factory/path test showing that an outer edge above the horizon but
-at or below the prograde ISCO is rejected by Solar rather than by a copied
-Gargantua ISCO formula.
 
 Run:
 
@@ -314,7 +319,7 @@ cmake --build build-phase5 --target test-scene-camera \
 
 Expected: all focused tests pass after fixture updates.
 
-- [ ] **Step 6: Commit L0 contracts and direction**
+- [x] **Step 6: Commit L0 contracts and direction**
 
 ```sh
 git add include/gargantua/reference/reference_scene.h \
@@ -322,8 +327,9 @@ git add include/gargantua/reference/reference_scene.h \
   include/gargantua/reference/reference_frame.h \
   include/gargantua/reference/reference_numerics.h \
   src/reference_scene.cpp src/perspective_camera.cpp src/reference_ray.cpp \
+  src/solar_kerr_ray_tracer.cpp \
   tests/test_scene_camera.cpp tests/test_reference_renderer.cpp \
-  tests/test_reference_output.cpp
+  tests/test_reference_output.cpp tests/test_solar_kerr_ray_tracer.cpp
 git commit -m "fix: define observer-to-past reference rays"
 ```
 
@@ -503,6 +509,10 @@ Use `spin_chi=0.5`, `observer_radius_M=30`, inclination `85 degrees`,
 - every disk hit has finite positive `g`;
 - at least one ray has an equatorial crossing outside disk support before its
   accepted final classification.
+
+Also construct a spin-zero scene with disk outer radius `3M`: it is outside
+the `2M` horizon but inside the `6M` ISCO. Require the Solar tracer factory to
+reject it, proving Gargantua does not copy the ISCO formula into L0 validation.
 
 Require `SolarKerrPathTrace::ignored_surface_crossings > 0` for at least one
 accepted ray, proving continuation without changing the public physical

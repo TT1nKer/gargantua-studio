@@ -56,13 +56,22 @@ ReferenceRayResult ray(RayClassification classification) {
     return ReferenceRayResult{
         classification,
         termination_reason,
+        -1.0,
         3.0,
+        2.5,
+        0.25,
         1.0e-12,
         2.0e-14,
         3.0e-14,
         4.0e-12,
         12,
         1,
+        std::numeric_limits<double>::quiet_NaN(),
+        std::numeric_limits<double>::quiet_NaN(),
+        std::numeric_limits<double>::quiet_NaN(),
+        0.0,
+        0.0,
+        0,
     };
 }
 

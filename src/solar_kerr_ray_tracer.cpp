@@ -75,7 +75,16 @@ ReferenceRayResult unavailable_result(
         unavailable,
         unavailable,
         unavailable,
+        unavailable,
+        unavailable,
+        unavailable,
         0,
+        0,
+        unavailable,
+        unavailable,
+        unavailable,
+        unavailable,
+        unavailable,
         0,
     };
 }
@@ -104,7 +113,7 @@ public:
           config_(GeodesicIntegrationConfig::cpu_reference(
               GeodesicKind::Null,
               scene.mass_M,
-              scene.initial_step_M,
+              -scene.initial_step_M,
               scene.max_step_M,
               scene.max_affine_M)),
           info_{
@@ -216,13 +225,22 @@ private:
         return ReferenceRayResult{
             classification,
             termination_reason_name(diagnostics.reason),
+            integrated.final_state.affine,
             final_radius,
+            final_radius,
+            0.0,
             diagnostics.max_constraint_error,
             diagnostics.max_energy_rel_error,
             diagnostics.max_lz_rel_error,
             diagnostics.max_carter_rel_error,
             diagnostics.accepted_steps,
             diagnostics.rejected_steps,
+            std::numeric_limits<double>::quiet_NaN(),
+            std::numeric_limits<double>::quiet_NaN(),
+            std::numeric_limits<double>::quiet_NaN(),
+            0.0,
+            0.0,
+            0,
         };
     }
 

@@ -9,6 +9,7 @@ namespace {
 constexpr double pi = 3.141592653589793238462643383279502884;
 constexpr std::size_t max_dimension = 4096;
 constexpr std::size_t max_pixels = 4096 * 4096;
+constexpr std::size_t max_disk_crossings = 1024;
 
 SceneValidation invalid(const char* message) {
     return SceneValidation{false, message};
@@ -29,12 +30,13 @@ ReferenceScene reference_scene_defaults() noexcept {
         200.0,
         0.02,
         0.25,
+        ScientificDiskScene{},
     };
 }
 
 SceneValidation validate_reference_scene(
     const ReferenceScene& scene) {
-    const std::array<double, 9> numeric_values{{
+    const std::array<double, 17> numeric_values{{
         scene.mass_M,
         scene.spin_chi,
         scene.observer_radius_M,
@@ -44,6 +46,14 @@ SceneValidation validate_reference_scene(
         scene.max_affine_M,
         scene.initial_step_M,
         scene.max_step_M,
+        scene.disk.outer_radius_M,
+        scene.disk.density_scale,
+        scene.disk.temperature_scale,
+        scene.disk.density_power,
+        scene.disk.specific_intensity_scale,
+        scene.disk.bolometric_intensity_scale,
+        scene.disk.surface_optical_depth,
+        scene.disk.display_exposure,
     }};
     for (const double value : numeric_values) {
         if (!std::isfinite(value)) {
@@ -78,6 +88,31 @@ SceneValidation validate_reference_scene(
     if (scene.observer_radius_M <=
         horizon_radius + scene.mass_M) {
         return invalid("observer must remain at least 1 M outside the horizon");
+    }
+    if (scene.disk.outer_radius_M <= horizon_radius) {
+        return invalid("disk outer radius must remain outside the horizon");
+    }
+    if (scene.disk.density_scale < 0.0 ||
+        scene.disk.temperature_scale <= 0.0 ||
+        scene.disk.density_power < 0.0 ||
+        scene.disk.specific_intensity_scale < 0.0 ||
+        scene.disk.bolometric_intensity_scale < 0.0) {
+        return invalid("disk material and emission scales are invalid");
+    }
+    if (scene.disk.opacity != ReferenceDiskOpacity::Opaque &&
+        scene.disk.opacity !=
+            ReferenceDiskOpacity::SemiTransparent) {
+        return invalid("disk opacity mode is not recognized");
+    }
+    if (scene.disk.surface_optical_depth < 0.0) {
+        return invalid("disk surface optical depth must be non-negative");
+    }
+    if (scene.disk.max_crossings == 0 ||
+        scene.disk.max_crossings > max_disk_crossings) {
+        return invalid("disk crossing bound must be between one and 1024");
+    }
+    if (scene.disk.display_exposure <= 0.0) {
+        return invalid("display exposure must be positive");
     }
     if (scene.escape_radius_M <= scene.observer_radius_M) {
         return invalid("escape radius must exceed observer radius");

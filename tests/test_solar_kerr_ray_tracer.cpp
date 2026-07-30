@@ -67,6 +67,9 @@ int main() {
         "captured ray retains interior-cutoff reason",
         center.termination_reason == "interior_cutoff");
     check(
+        "captured ray advances observer-to-past",
+        center.final_affine_M < 0.0);
+    check(
         "captured ray satisfies Hamiltonian gate",
         center.max_constraint_error < 1.0e-10);
     check(
@@ -109,6 +112,9 @@ int main() {
     check(
         "escaped ray retains escape reason",
         corner.termination_reason == "escaped");
+    check(
+        "escaped ray advances observer-to-past",
+        corner.final_affine_M < 0.0);
     check(
         "escaped ray satisfies Hamiltonian gate",
         corner.max_constraint_error < 1.0e-10);
